@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { Button, Input } from "@ui-kitten/components";
 
 const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
@@ -19,22 +20,19 @@ const Login = ({ navigation }: any) => {
 
   return (
     <View>
-      <TextInput
+      <Input
         placeholder="Email *"
         value={email}
         onChangeText={(email) => setEmail(email)}
       />
-      <TextInput
+      <Input
         placeholder="Senha *"
         value={password}
         onChangeText={(password) => setPassword(password)}
         secureTextEntry
       />
-      <Button title="Conectar-se" onPress={handleLogin} />
-      <Button
-        title="Crie uma"
-        onPress={() => navigation.navigate("Register")}
-      />
+      <Button onPress={handleLogin}>Conectar-se</Button>
+      <Button onPress={() => navigation.navigate("Register")} />
     </View>
   );
 };

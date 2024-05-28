@@ -4,13 +4,17 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./src/screens/Login";
 import Home from "./src/screens/Home";
 import Register from "./src/screens/Register";
+import * as eva from "@eva-design/eva";
+import { ApplicationProvider } from "@ui-kitten/components";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <AuthProvider>
-      <Layout />
+      <ApplicationProvider {...eva} theme={eva.light}>
+        <Layout />
+      </ApplicationProvider>
     </AuthProvider>
   );
 }
