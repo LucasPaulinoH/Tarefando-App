@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Button, TextInput, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
-const Login = () => {
+const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,17 +20,21 @@ const Login = () => {
   return (
     <View>
       <TextInput
-        placeholder="Email"
+        placeholder="Email *"
         value={email}
         onChangeText={(email) => setEmail(email)}
       />
       <TextInput
-        placeholder="Password"
+        placeholder="Senha *"
         value={password}
         onChangeText={(password) => setPassword(password)}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Conectar-se" onPress={handleLogin} />
+      <Button
+        title="Crie uma"
+        onPress={() => navigation.navigate("Register")}
+      />
     </View>
   );
 };
