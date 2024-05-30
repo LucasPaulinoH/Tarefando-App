@@ -1,13 +1,19 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import {
-  API_URL as API_BASE_URL,
-  TOKEN_KEY,
-} from "../constants/StringContants";
+import { TOKEN_KEY } from "../constants/StringContants";
 import * as SecureStore from "expo-secure-store";
+import { User } from "../services/User/type";
+import { API_BASE_URL } from "../services/api";
+import userApi from "../services/User";
+import { jwtDecode } from "jwt-decode";
+import { LOCALE_DEFAULT } from "@ui-kitten/components/ui/calendar/service/nativeDate.service";
 
 interface AuthProps {
-  authState?: { token: string | null; authenticated: boolean | null };
+  authState?: {
+    token: string | null;
+    authenticated: boolean | null;
+    user: User | null;
+  };
   onLogin?: (email: string, password: string) => Promise<any>;
   onRegister?: ({}) => Promise<any>;
   onLogout?: () => Promise<any>;
@@ -23,23 +29,27 @@ export const AuthProvider = ({ children }: any) => {
   const [authState, setAuthState] = useState<{
     token: string | null;
     authenticated: boolean | null;
-  }>({ token: null, authenticated: null });
+    user: User | null;
+  }>({ token: null, authenticated: null, user: null });
 
-  useEffect(() => {
-    const loadToken = async () => {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
-      console.log("stored token:", token);
+  // useEffect(() => {
+  //   const loadToken = async () => {
+  //     const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
 
-      if (token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setAuthState({ token, authenticated: true });
-      } else {
-        setAuthState({ token: null, authenticated: false });
-      }
-    };
+  //     if (token) {
+  //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    loadToken();
-  }, []);
+  //       const loggedUserId = jwtDecode(token!).id;
+
+  //       const loggedUser: User = await userApi.getUser(loggedUserId);
+  //       setAuthState({ token, authenticated: true, user: loggedUser });
+  //     } else {
+  //       setAuthState({ token: null, authenticated: false, user: null });
+  //     }
+  //   };
+
+  //   loadToken();
+  // }, []);
 
   const login = async (email: string, password: string) => {
     try {
@@ -48,14 +58,19 @@ export const AuthProvider = ({ children }: any) => {
         password,
       });
 
-      setAuthState({
-        token: loginResponse.data.token,
-        authenticated: true,
-      });
-
       axios.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${loginResponse.data.token}`;
+
+      const loggedUserId = jwtDecode(loginResponse.data.token).id;
+
+      const loggedUser = await userApi.getUser(loggedUserId);
+
+      setAuthState({
+        token: loginResponse.data.token,
+        authenticated: true,
+        user: loggedUser,
+      });
 
       await SecureStore.setItemAsync(TOKEN_KEY, loginResponse.data.token);
     } catch (error) {
@@ -84,6 +99,7 @@ export const AuthProvider = ({ children }: any) => {
     setAuthState({
       token: null,
       authenticated: false,
+      user: null,
     });
   };
 

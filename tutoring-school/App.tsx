@@ -1,11 +1,12 @@
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Login from "./src/screens/Login";
-import Home from "./src/screens/Home";
-import Register from "./src/screens/Register";
+
 import * as eva from "@eva-design/eva";
 import { ApplicationProvider } from "@ui-kitten/components";
+import Home from "./src/screens/Home";
+import Login from "./src/screens/general/Login";
+import Register from "./src/screens/general/Register";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,7 +21,7 @@ export default function App() {
 }
 
 export const Layout = () => {
-  const { authState, onLogout } = useAuth();
+  const { authState } = useAuth();
 
   return (
     <NavigationContainer>

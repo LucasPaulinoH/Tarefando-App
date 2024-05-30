@@ -27,5 +27,9 @@
       "favicon": "./assets/favicon.png"
     },
     "build": { "babel": { "include": ["@ui-kitten/components"] } }
+  },
+  "packageOpts": {
+    "config": "metro.config.js",
+    "sourceExts": ["js", "jsx", "ts", "tsx", "svg"]
   }
 }

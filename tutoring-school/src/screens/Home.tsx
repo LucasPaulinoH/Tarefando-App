@@ -5,7 +5,7 @@ const Home = () => {
   const auth = useAuth();
   return (
     <View>
-      <Text>User has been authenticated</Text>
+      <Text>{`Olá ${auth.authState?.user?.name}, ROLE: ${auth.authState?.user?.role}`}</Text>
       <Button title="Deslogar" onPress={auth.onLogout} />
     </View>
   );
