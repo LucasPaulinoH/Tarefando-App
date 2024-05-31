@@ -3,20 +3,26 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import * as eva from "@eva-design/eva";
-import { ApplicationProvider } from "@ui-kitten/components";
-import Home from "./src/screens/Home";
+import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
 import Login from "./src/screens/general/Login";
 import Register from "./src/screens/general/Register";
+import { UserRole } from "./src/types/Types";
+import GuardianHome from "./src/screens/guardian/Home";
+import TutorHome from "./src/screens/tutor/Home";
+import { EvaIconsPack } from "@ui-kitten/eva-icons";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ApplicationProvider {...eva} theme={eva.light}>
-        <Layout />
-      </ApplicationProvider>
-    </AuthProvider>
+    <>
+      <IconRegistry icons={EvaIconsPack} />
+      <AuthProvider>
+        <ApplicationProvider {...eva} theme={eva.light}>
+          <Layout />
+        </ApplicationProvider>
+      </AuthProvider>
+    </>
   );
 }
 
@@ -27,7 +33,11 @@ export const Layout = () => {
     <NavigationContainer>
       <Stack.Navigator>
         {authState?.authenticated ? (
-          <Stack.Screen name="Home" component={Home}></Stack.Screen>
+          authState.user?.role === UserRole.GUARDIAN ? (
+            <Stack.Screen name="GuardianHome" component={GuardianHome} />
+          ) : (
+            <Stack.Screen name="TutorHome" component={TutorHome} />
+          )
         ) : (
           <>
             <Stack.Screen name="Login" component={Login}></Stack.Screen>

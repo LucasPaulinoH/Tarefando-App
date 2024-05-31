@@ -1,12 +1,11 @@
 import axios from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { TOKEN_KEY } from "../constants/StringContants";
 import * as SecureStore from "expo-secure-store";
 import { User } from "../services/User/type";
 import { API_BASE_URL } from "../services/api";
 import userApi from "../services/User";
 import { jwtDecode } from "jwt-decode";
-import { LOCALE_DEFAULT } from "@ui-kitten/components/ui/calendar/service/nativeDate.service";
 
 interface AuthProps {
   authState?: {
@@ -62,7 +61,7 @@ export const AuthProvider = ({ children }: any) => {
         "Authorization"
       ] = `Bearer ${loginResponse.data.token}`;
 
-      const loggedUserId = jwtDecode(loginResponse.data.token).id;
+      const loggedUserId = jwtDecode(loginResponse.data.token).id ;
 
       const loggedUser = await userApi.getUser(loggedUserId);
 

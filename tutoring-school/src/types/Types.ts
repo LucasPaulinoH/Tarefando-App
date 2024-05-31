@@ -1,4 +1,4 @@
 export enum UserRole {
-  TUTOR,
-  GUARDIAN,
+  TUTOR = 'TUTOR',
+  GUARDIAN = 'GUARDIAN',
 }
