@@ -31,7 +31,7 @@ const SearchIcon = (props: any): IconElement => (
   <Icon {...props} name="search-outline" />
 );
 
-const TutorHome = () => {
+const TutorHome = ({ navigation }: any) => {
   const { authState } = useAuth();
 
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
@@ -50,9 +50,25 @@ const TutorHome = () => {
       console.error(error);
     }
   };
+
+  const handleDeleteSchoolClick = async (schoolId: string) => {
+    try {
+      const deletedSchoolResponse = await schoolApi.deleteSchool(schoolId);
+      console.log(deletedSchoolResponse);
+
+      fetchOwnedSchools(authState?.user?.id);
+    } catch (error) {
+      console.error("Error deleting school: ", error);
+    }
+  };
   return (
     <View>
-      <Button accessoryLeft={AddSchoolIcon}>Adicionar escola</Button>
+      <Button
+        accessoryLeft={AddSchoolIcon}
+        onPress={() => navigation.navigate("AddSchool")}
+      >
+        Adicionar escola
+      </Button>
       <Input placeholder="Pesquise uma escola..." accessoryLeft={SearchIcon} />
       {ownedSchools.map((school: School) => (
         <Card key={school.id}>
@@ -73,7 +89,10 @@ const TutorHome = () => {
             <View>
               <ButtonGroup appearance="ghost">
                 <Button accessoryLeft={EditIcon} />
-                <Button accessoryLeft={DeleteIcon} />
+                <Button
+                  accessoryLeft={DeleteIcon}
+                  onPress={() => handleDeleteSchoolClick(school.id!)}
+                />
               </ButtonGroup>
             </View>
           </View>

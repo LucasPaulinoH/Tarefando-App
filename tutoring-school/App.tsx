@@ -10,6 +10,7 @@ import { UserRole } from "./src/types/Types";
 import GuardianHome from "./src/screens/guardian/Home";
 import TutorHome from "./src/screens/tutor/Home";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import AddSchool from "./src/screens/tutor/AddSchool";
 
 const Stack = createNativeStackNavigator();
 
@@ -36,7 +37,10 @@ export const Layout = () => {
           authState.user?.role === UserRole.GUARDIAN ? (
             <Stack.Screen name="GuardianHome" component={GuardianHome} />
           ) : (
-            <Stack.Screen name="TutorHome" component={TutorHome} />
+            <>
+              <Stack.Screen name="TutorHome" component={TutorHome} />
+              <Stack.Screen name="AddSchool" component={AddSchool} />
+            </>
           )
         ) : (
           <>
