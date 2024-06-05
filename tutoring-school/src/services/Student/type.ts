@@ -1,11 +1,11 @@
 import { Task } from "../Task/type";
 
 export interface Student {
-  id: string;
+  id?: string;
   guardianId: string;
   schoolId?: string;
   name: string;
-  birthdate: string;
+  birthdate: Date;
   grade: string;
-  tasks: Task[]
+  tasks?: Task[]
 }

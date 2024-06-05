@@ -2,20 +2,24 @@ import axios from "axios";
 import { School } from "./type";
 import { API_BASE_URL } from "../api";
 
-const SUB_URL = "schools";
+const CONTROLLER_URL = `${API_BASE_URL}/schools`;
 
 const schoolApi = {
   createSchool: (newSchool: School): Promise<School> =>
     axios
-      .post(`${API_BASE_URL}/${SUB_URL}`, newSchool)
+      .post(`${CONTROLLER_URL}`, newSchool)
       .then((response) => response.data),
   getSchoolsFromTutor: (tutorId: string): Promise<School[]> =>
     axios
-      .get(`${API_BASE_URL}/${SUB_URL}/search?tutorId=${tutorId}`)
+      .get(`${CONTROLLER_URL}/search?tutorId=${tutorId}`)
+      .then((response) => response.data),
+  updateSchool: (schoolId: string, updatedSchool: School): Promise<School> =>
+    axios
+      .put(`${CONTROLLER_URL}/${schoolId}`, updatedSchool)
       .then((response) => response.data),
   deleteSchool: (schoolId: string): Promise<void> =>
     axios
-      .delete(`${API_BASE_URL}/${SUB_URL}/${schoolId}`)
+      .delete(`${CONTROLLER_URL}/${schoolId}`)
       .then((response) => response.data),
 };
 

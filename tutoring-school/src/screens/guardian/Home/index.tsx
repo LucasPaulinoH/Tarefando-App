@@ -1,49 +1,35 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import {
-  Button,
-  Card,
-  Icon,
-  IconElement,
-  Input,
-  Text,
-  ButtonGroup,
-} from "@ui-kitten/components";
+import { Button, Card, Input, Text, ButtonGroup } from "@ui-kitten/components";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
 import styles from "./styles";
 import { Task } from "../../../services/Task/type";
 import { TaskStatus } from "../../../types/Types";
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  SearchIcon,
+} from "../../../theme/Icons";
+import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
 
-const EditIcon = (props: any): IconElement => (
-  <Icon {...props} name="edit-outline" />
-);
-
-const DeleteIcon = (props: any): IconElement => (
-  <Icon {...props} name="trash-2-outline" />
-);
-
-const AddSchoolIcon = (props: any): IconElement => (
-  <Icon {...props} name="plus-square-outline" />
-);
-
-const SearchIcon = (props: any): IconElement => (
-  <Icon {...props} name="search-outline" />
-);
-
-const PendentIcon = (props: any): IconElement => (
-  <Icon {...props} name="clock-outline" />
-);
-
-const GuardianHome = () => {
+const GuardianHome = ({ navigation }: any) => {
   const { authState } = useAuth();
 
   const [students, setStudents] = useState<Student[]>([]);
 
   useEffect(() => {
-    if (authState?.user?.id) fetchSelfStudents(authState?.user?.id);
-  }, [authState]);
+    fetchSelfStudents(authState?.user?.id);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSelfStudents(authState?.user?.id);
+    }, [authState?.user?.id])
+  );
 
   const fetchSelfStudents = async (guardianId: string | undefined) => {
     try {
@@ -66,15 +52,36 @@ const GuardianHome = () => {
     return pendentTaskCounter;
   };
 
+  const handleEditStudentClick = (student: Student) => {
+    SecureStore.setItem("selectedStudent", JSON.stringify(student));
+    navigation.navigate("EditStudent");
+  };
+
+  const handleDeleteStudentClick = async (studentId: string) => {
+    try {
+      await studentApi.deleteStudent(studentId);
+      fetchSelfStudents(authState?.user?.id);
+    } catch (error) {
+      console.error("Error deleting school: ", error);
+    }
+  };
+
   return (
     <View>
-      <Button accessoryLeft={AddSchoolIcon}>Adicionar estudantes</Button>
+      <Button
+        accessoryLeft={AddIcon}
+        onPress={() => {
+          navigation.navigate("AddStudent");
+        }}
+      >
+        Adicionar estudante
+      </Button>
       <Input placeholder="Buscar estudantes..." accessoryLeft={SearchIcon} />
       {students.map((student: Student) => {
         const pendentTasksQuantity = countPendentTasksInTaskArray(
-          student.tasks
+          student.tasks!
         );
-        
+
         return (
           <Card key={student.id}>
             <View style={styles.studentCard}>
@@ -96,8 +103,18 @@ const GuardianHome = () => {
 
               <View>
                 <ButtonGroup appearance="ghost">
-                  <Button accessoryLeft={EditIcon} />
-                  <Button accessoryLeft={DeleteIcon} />
+                  <Button
+                    accessoryLeft={EditIcon}
+                    onPress={() => {
+                      handleEditStudentClick(student);
+                    }}
+                  />
+                  <Button
+                    accessoryLeft={DeleteIcon}
+                    onPress={() => {
+                      handleDeleteStudentClick(student.id!);
+                    }}
+                  />
                 </ButtonGroup>
               </View>
             </View>

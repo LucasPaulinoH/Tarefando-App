@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { School } from "../../../services/School/type";
 import { useAuth } from "../../../context/AuthContext";
@@ -8,37 +8,30 @@ import {
   Button,
   ButtonGroup,
   Card,
-  Icon,
-  IconElement,
   Input,
   Text,
 } from "@ui-kitten/components";
 import styles from "./styles";
-
-const EditIcon = (props: any): IconElement => (
-  <Icon {...props} name="edit-outline" />
-);
-
-const DeleteIcon = (props: any): IconElement => (
-  <Icon {...props} name="trash-2-outline" />
-);
-
-const AddSchoolIcon = (props: any): IconElement => (
-  <Icon {...props} name="plus-square-outline" />
-);
-
-const SearchIcon = (props: any): IconElement => (
-  <Icon {...props} name="search-outline" />
-);
+import { shortenLargeTexts } from "../../../utils/stringUtils";
+import * as SecureStore from "expo-secure-store";
+import { useFocusEffect } from "@react-navigation/native";
+import { AddIcon, DeleteIcon, EditIcon, SearchIcon } from "../../../theme/Icons";
 
 const TutorHome = ({ navigation }: any) => {
   const { authState } = useAuth();
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
 
   useEffect(() => {
-    if (authState?.user?.id) fetchOwnedSchools(authState?.user?.id);
-  }, [authState]);
+    fetchOwnedSchools(authState?.user?.id);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchOwnedSchools(authState?.user?.id);
+    }, [authState?.user?.id])
+  );
 
   const fetchOwnedSchools = async (tutorId: string | undefined) => {
     try {
@@ -51,44 +44,61 @@ const TutorHome = ({ navigation }: any) => {
     }
   };
 
+  const filteredSchools = ownedSchools.filter((school) =>
+    school.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSchoolDetailsClick = (school: School) => {
+    SecureStore.setItem("selectedSchool", JSON.stringify(school));
+    navigation.navigate("SchoolDetails");
+  };
+
+  const handleEditSchoolClick = (school: School) => {
+    SecureStore.setItem("selectedSchool", JSON.stringify(school));
+    navigation.navigate("EditSchool");
+  };
+
   const handleDeleteSchoolClick = async (schoolId: string) => {
     try {
-      const deletedSchoolResponse = await schoolApi.deleteSchool(schoolId);
-      console.log(deletedSchoolResponse);
-
+      await schoolApi.deleteSchool(schoolId);
       fetchOwnedSchools(authState?.user?.id);
     } catch (error) {
       console.error("Error deleting school: ", error);
     }
   };
+
   return (
     <View>
       <Button
-        accessoryLeft={AddSchoolIcon}
+        accessoryLeft={AddIcon}
         onPress={() => navigation.navigate("AddSchool")}
       >
         Adicionar escola
       </Button>
-      <Input placeholder="Pesquise uma escola..." accessoryLeft={SearchIcon} />
-      {ownedSchools.map((school: School) => (
-        <Card key={school.id}>
+      <Input
+        placeholder="Pesquise uma escola..."
+        accessoryLeft={SearchIcon}
+        value={searchTerm}
+        onChangeText={(search) => setSearchTerm(search)}
+      />
+      {filteredSchools.map((school: School) => (
+        <Card key={school.id} onPress={() => handleSchoolDetailsClick(school)}>
           <View style={styles.schoolCard}>
             <View style={styles.schoolCardFirstHalf}>
-              <Avatar
-                size="giant"
-                src="https://njadvogados.com/website2020/wp-content/uploads/2020/10/educacao-em-portugal.jpg"
-                style={styles.schoolAvatar}
-              />
+              <Avatar size="giant" src="" style={styles.schoolAvatar} />
 
               <View>
                 <Text category="h6">{school.name}</Text>
-                <Text>{`${school.address}, ${school.district}`}</Text>
+                <Text>{shortenLargeTexts(`${school.district}`, 20)}</Text>
               </View>
             </View>
 
             <View>
               <ButtonGroup appearance="ghost">
-                <Button accessoryLeft={EditIcon} />
+                <Button
+                  accessoryLeft={EditIcon}
+                  onPress={() => handleEditSchoolClick(school)}
+                />
                 <Button
                   accessoryLeft={DeleteIcon}
                   onPress={() => handleDeleteSchoolClick(school.id!)}

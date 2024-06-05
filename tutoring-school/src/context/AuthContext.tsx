@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { TOKEN_KEY } from "../constants/StringContants";
 import * as SecureStore from "expo-secure-store";
 import { User } from "../services/User/type";
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: any) => {
         "Authorization"
       ] = `Bearer ${loginResponse.data.token}`;
 
-      const loggedUserId = jwtDecode(loginResponse.data.token).id ;
+      const loggedUserId = jwtDecode(loginResponse.data.token).id;
 
       const loggedUser = await userApi.getUser(loggedUserId);
 

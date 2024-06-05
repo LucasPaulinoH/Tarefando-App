@@ -11,6 +11,10 @@ import GuardianHome from "./src/screens/guardian/Home";
 import TutorHome from "./src/screens/tutor/Home";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import AddSchool from "./src/screens/tutor/AddSchool";
+import SchoolDetails from "./src/screens/tutor/SchoolDetails";
+import EditSchool from "./src/screens/tutor/EditSchool";
+import AddStudent from "./src/screens/guardian/AddStudent";
+import EditStudent from "./src/screens/guardian/EditStudent";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,11 +39,17 @@ export const Layout = () => {
       <Stack.Navigator>
         {authState?.authenticated ? (
           authState.user?.role === UserRole.GUARDIAN ? (
-            <Stack.Screen name="GuardianHome" component={GuardianHome} />
+            <>
+              <Stack.Screen name="GuardianHome" component={GuardianHome} />
+              <Stack.Screen name="AddStudent" component={AddStudent} />
+              <Stack.Screen name="EditStudent" component={EditStudent} />
+            </>
           ) : (
             <>
               <Stack.Screen name="TutorHome" component={TutorHome} />
               <Stack.Screen name="AddSchool" component={AddSchool} />
+              <Stack.Screen name="EditSchool" component={EditSchool} />
+              <Stack.Screen name="SchoolDetails" component={SchoolDetails} />
             </>
           )
         ) : (

@@ -2,10 +2,11 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   studentCard: {
+    width: "100%",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
+    justifyContent: "space-between",
   },
 
   studentCardFirstHalf: {
@@ -18,10 +19,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-  },
-
-  schoolAvatar: {
-    borderRadius: 5,
   },
 });
 

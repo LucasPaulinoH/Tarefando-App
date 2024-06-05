@@ -1,36 +1,37 @@
-import { View } from "react-native";
-import { Text, Input, Button, IconElement, Icon } from "@ui-kitten/components";
-import { useAuth } from "../../../context/AuthContext";
-import MaskInput from "react-native-mask-input";
-import { useEffect, useState } from "react";
-import { fetchCep } from "../../../utils/cep";
-import schoolApi from "../../../services/School";
-import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
+import * as SecureStore from "expo-secure-store";
 import { School } from "../../../services/School/type";
-import { AddIcon } from "../../../theme/Icons";
+import { View } from "react-native";
+import { useState } from "react";
+import { Input, Button, Text } from "@ui-kitten/components";
+import MaskInput from "react-native-mask-input";
+import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
+import schoolApi from "../../../services/School";
+import { EditIcon } from "../../../theme/Icons";
 
-const AddSchool = ({ navigation }: any) => {
-  const { authState } = useAuth();
+const EditSchool = ({ navigation }: any) => {
+  const selectedSchool: School = JSON.parse(
+    SecureStore.getItem("selectedSchool")!
+  );
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(selectedSchool.name);
+  const [description, setDescription] = useState(selectedSchool.description);
+  const [phone, setPhone] = useState(selectedSchool.phone);
+  const [email, setEmail] = useState(selectedSchool.email);
 
-  const [cep, setCep] = useState("");
-  const [address, setAddress] = useState("");
-  const [addressNumber, setAddressNumber] = useState("");
-  const [district, setDistrict] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const [cep, setCep] = useState(selectedSchool.cep);
+  const [address, setAddress] = useState(selectedSchool.address);
+  const [addressNumber, setAddressNumber] = useState(
+    selectedSchool.addressNumber
+  );
+  const [district, setDistrict] = useState(selectedSchool.district);
+  const [city, setCity] = useState(selectedSchool.city);
+  const [state, setState] = useState(selectedSchool.state);
 
-  const [isCepFilled, setIsCepFilled] = useState(false);
-
-  const handleAddSchoolClick = async () => {
+  const handleEditSchoolClick = async () => {
     try {
-      const tutorId = authState?.user!.id!;
+      const { tutorId } = selectedSchool;
 
-      await schoolApi.createSchool({
+      await schoolApi.updateSchool(selectedSchool.id!, {
         tutorId,
         name,
         description,
@@ -45,26 +46,13 @@ const AddSchool = ({ navigation }: any) => {
       } as School);
       navigation.navigate("TutorHome");
     } catch (error) {
-      console.error("Error creating school: ", error);
+      console.error("Error editing school: ", error);
     }
   };
 
-  useEffect(() => {
-    if (cep.replace("-", "").length === 8) {
-      fetchCep(cep, setAddress, setDistrict, setCity, setState);
-      setIsCepFilled(true);
-    } else {
-      setAddress("");
-      setDistrict("");
-      setCity("");
-      setState("");
-      setIsCepFilled(false);
-    }
-  }, [cep]);
-
   return (
     <View>
-      <Text category="h6">Nova escola</Text>
+      <Text category="h6">Editar escola</Text>
       <Input
         placeholder="Nome da escola *"
         value={name}
@@ -82,7 +70,6 @@ const AddSchool = ({ navigation }: any) => {
         value={phone}
         onChangeText={(phone) => setPhone(phone)}
         placeholder="Telefone (contato) *"
-        keyboardType="numeric"
       />
       <Input
         placeholder="Email (contato) *"
@@ -94,13 +81,11 @@ const AddSchool = ({ navigation }: any) => {
         value={cep}
         onChangeText={(cep) => setCep(cep)}
         placeholder="CEP"
-        keyboardType="numeric"
       />
       <Input
         placeholder="Rua"
         value={address}
         onChangeText={(street) => setAddress(street)}
-        disabled={isCepFilled}
       />
       <Input
         placeholder="N°"
@@ -111,25 +96,22 @@ const AddSchool = ({ navigation }: any) => {
         placeholder="Bairro"
         value={district}
         onChangeText={(district) => setDistrict(district)}
-        disabled={isCepFilled}
       />
       <Input
         placeholder="Cidade"
         value={city}
         onChangeText={(city) => setCity(city)}
-        disabled={isCepFilled}
       />
       <Input
         placeholder="Estado"
         value={state}
         onChangeText={(state) => setState(state)}
-        disabled={isCepFilled}
       />
-      <Button accessoryLeft={AddIcon} onPress={handleAddSchoolClick}>
-        Adicionar escola
+      <Button onPress={handleEditSchoolClick} accessoryLeft={EditIcon}>
+        Confirmar edição
       </Button>
     </View>
   );
 };
 
-export default AddSchool;
+export default EditSchool;
