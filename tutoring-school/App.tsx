@@ -15,6 +15,8 @@ import SchoolDetails from "./src/screens/tutor/SchoolDetails";
 import EditSchool from "./src/screens/tutor/EditSchool";
 import AddStudent from "./src/screens/guardian/AddStudent";
 import EditStudent from "./src/screens/guardian/EditStudent";
+import StudentDetails from "./src/screens/guardian/StudentDetails";
+import TaskDetails from "./src/screens/guardian/TaskDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +45,8 @@ export const Layout = () => {
               <Stack.Screen name="GuardianHome" component={GuardianHome} />
               <Stack.Screen name="AddStudent" component={AddStudent} />
               <Stack.Screen name="EditStudent" component={EditStudent} />
+              <Stack.Screen name="StudentDetails" component={StudentDetails} />
+              <Stack.Screen name="TaskDetails" component={TaskDetails} />
             </>
           ) : (
             <>

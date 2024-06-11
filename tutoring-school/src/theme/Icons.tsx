@@ -15,3 +15,17 @@ export const DeleteIcon = (props: any): IconElement => (
 export const SearchIcon = (props: any): IconElement => (
   <Icon {...props} name="search-outline" />
 );
+
+export const PendentTaskIcon = (props: any): IconElement => (
+  <Icon {...props} name="clock-outline" />
+);
+
+export const FinishedTaskIcon = (props: any): IconElement => (
+  <Icon {...props} name="checkmark-circle-outline" />
+);
+
+export const CancelledTaskIcon = (props: any): IconElement => (
+  <Icon {...props} name="close-circle-outline" />
+);
+
+         

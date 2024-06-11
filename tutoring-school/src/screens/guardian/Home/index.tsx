@@ -5,8 +5,6 @@ import { Button, Card, Input, Text, ButtonGroup } from "@ui-kitten/components";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
 import styles from "./styles";
-import { Task } from "../../../services/Task/type";
-import { TaskStatus } from "../../../types/Types";
 import {
   AddIcon,
   DeleteIcon,
@@ -42,14 +40,9 @@ const GuardianHome = ({ navigation }: any) => {
     }
   };
 
-  const countPendentTasksInTaskArray = (tasks: Task[]) => {
-    let pendentTaskCounter = 0;
-
-    tasks.forEach((task) => {
-      if (task.status === TaskStatus.PENDENT) pendentTaskCounter++;
-    });
-
-    return pendentTaskCounter;
+  const handleStudentDetailsClick = (student: Student) => {
+    SecureStore.setItem("selectedStudent", JSON.stringify(student));
+    navigation.navigate("StudentDetails");
   };
 
   const handleEditStudentClick = (student: Student) => {
@@ -77,50 +70,36 @@ const GuardianHome = ({ navigation }: any) => {
         Adicionar estudante
       </Button>
       <Input placeholder="Buscar estudantes..." accessoryLeft={SearchIcon} />
-      {students.map((student: Student) => {
-        const pendentTasksQuantity = countPendentTasksInTaskArray(
-          student.tasks!
-        );
-
-        return (
-          <Card key={student.id}>
-            <View style={styles.studentCard}>
-              <View style={styles.studentCardFirstHalf}>
-                <Text category="h6">{student.name}</Text>
-                <View style={styles.pendentTasksIconAndLabel}>
-                  {pendentTasksQuantity > 0 ? (
-                    <Text category="h4">•</Text>
-                  ) : null}
-                  <Text>
-                    {pendentTasksQuantity === 0
-                      ? "Nenhuma atividade pendente"
-                      : pendentTasksQuantity === 1
-                      ? "1 atividade pendente"
-                      : `${pendentTasksQuantity} atividades pendentes`}
-                  </Text>
-                </View>
-              </View>
-
-              <View>
-                <ButtonGroup appearance="ghost">
-                  <Button
-                    accessoryLeft={EditIcon}
-                    onPress={() => {
-                      handleEditStudentClick(student);
-                    }}
-                  />
-                  <Button
-                    accessoryLeft={DeleteIcon}
-                    onPress={() => {
-                      handleDeleteStudentClick(student.id!);
-                    }}
-                  />
-                </ButtonGroup>
-              </View>
+      {students.map((student: Student) => (
+        <Card
+          key={student.id}
+          onPress={() => handleStudentDetailsClick(student)}
+        >
+          <View style={styles.studentCard}>
+            <View style={styles.studentCardFirstHalf}>
+              <Text category="h6">{student.name}</Text>
+              <View style={styles.pendentTasksIconAndLabel}></View>
             </View>
-          </Card>
-        );
-      })}
+
+            <View>
+              <ButtonGroup appearance="ghost">
+                <Button
+                  accessoryLeft={EditIcon}
+                  onPress={() => {
+                    handleEditStudentClick(student);
+                  }}
+                />
+                <Button
+                  accessoryLeft={DeleteIcon}
+                  onPress={() => {
+                    handleDeleteStudentClick(student.id!);
+                  }}
+                />
+              </ButtonGroup>
+            </View>
+          </View>
+        </Card>
+      ))}
     </View>
   );
 };

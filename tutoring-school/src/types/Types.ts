@@ -5,6 +5,6 @@ export enum UserRole {
 
 export enum TaskStatus {
   PENDENT = "PENDENT",
-  FINISHED = "FINISHED",
-  CANCELED = "CANCELED",
+  CONCLUDED = "CONCLUDED",
+  DELAYED = "DELAYED",
 }
