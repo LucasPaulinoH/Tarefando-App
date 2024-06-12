@@ -1,9 +1,9 @@
 export interface Task {
-  id: string;
+  id?: string;
   subjectId: string;
   title: string;
   description: string;
   images: string[];
   deadlineDate: Date;
-  concluded: boolean;
+  concluded?: boolean;
 }

@@ -9,10 +9,15 @@ import {
   AddIcon,
   DeleteIcon,
   EditIcon,
+  PendentTaskIcon,
   SearchIcon,
 } from "../../../theme/Icons";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import { Task } from "../../../services/Task/type";
+import { checkTaskStatusFromTaskDeadline as checkTaskStatus } from "../../../utils/generalFunctions";
+import { CURRENT_DATE } from "../../../constants/date";
+import { TaskStatus } from "../../../types/Types";
 
 const GuardianHome = ({ navigation }: any) => {
   const { authState } = useAuth();
@@ -59,6 +64,36 @@ const GuardianHome = ({ navigation }: any) => {
     }
   };
 
+  const countPendentTasksInTaskArray = (tasks: Task[]): number => {
+    let pendentTaskCounter = 0;
+
+    let iterableTask = null;
+    for (let i = 0; i < tasks.length; i++) {
+      iterableTask = tasks[i];
+
+      if (
+        checkTaskStatus(
+          new Date(iterableTask.deadlineDate),
+          CURRENT_DATE,
+          iterableTask.concluded!
+        ) === TaskStatus.PENDENT
+      )
+        pendentTaskCounter++;
+    }
+
+    return pendentTaskCounter;
+  };
+
+  const showStudentPendentTasksString = (
+    pendentTaskQuantity: number
+  ): string => {
+    return pendentTaskQuantity === 0
+      ? `Nenhuma atividade pendente`
+      : pendentTaskQuantity === 1
+      ? `1 atividade pendente`
+      : `${pendentTaskQuantity} atividades pendentes`;
+  };
+
   return (
     <View>
       <Button
@@ -78,7 +113,25 @@ const GuardianHome = ({ navigation }: any) => {
           <View style={styles.studentCard}>
             <View style={styles.studentCardFirstHalf}>
               <Text category="h6">{student.name}</Text>
-              <View style={styles.pendentTasksIconAndLabel}></View>
+              <View style={styles.pendentTasksIconAndLabel}>
+                {(() => {
+                  const pendentTasksQuantity = countPendentTasksInTaskArray(
+                    student.tasks!
+                  );
+                  return pendentTasksQuantity > 0 ? (
+                    <>
+                      <PendentTaskIcon style={{ width: 20, height: 20 }} />
+                      <Text>
+                        {showStudentPendentTasksString(pendentTasksQuantity)}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text>
+                      {showStudentPendentTasksString(pendentTasksQuantity)}
+                    </Text>
+                  );
+                })()}
+              </View>
             </View>
 
             <View>

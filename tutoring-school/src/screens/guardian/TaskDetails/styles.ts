@@ -18,12 +18,28 @@ const styles = StyleSheet.create({
   image: {
     width: 300,
     height: 300,
-    borderRadius: 15
+    borderRadius: 8,
   },
 
   concludeButton: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
     backgroundColor: CONCLUDED_TASK,
     borderColor: CONCLUDED_TASK,
+  },
+
+  concludeButtonIcon: {
+    width: 20,
+    height: 20,
+    color: "#000000",
+    opacity: 0.55
+  },
+
+
+  concludeButtonLabel: {
+    color: "rgba(0,0,0,0.4)",
+    fontWeight: "bold",
   },
 });
 

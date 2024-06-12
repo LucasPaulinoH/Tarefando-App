@@ -28,4 +28,8 @@ export const CancelledTaskIcon = (props: any): IconElement => (
   <Icon {...props} name="close-circle-outline" />
 );
 
+export const CalendarIcon = (props: any): IconElement => (
+  <Icon {...props} name="calendar-outline" />
+);
+
          

@@ -8,6 +8,7 @@ import {
   PENDENT_TASK,
 } from "../../theme/palette";
 import { dateToString } from "../../utils/stringUtils";
+import { checkTaskStatusFromTaskDeadline } from "../../utils/generalFunctions";
 
 interface TaskStatusChipProps {
   deadlineDate: Date;
@@ -21,18 +22,6 @@ const TaskStatusChip = (props: TaskStatusChipProps) => {
 
   const deadlineDateAsDate = new Date(deadlineDate);
   const deadlineYear = deadlineDateAsDate.getFullYear();
-
-  const checkTaskStatusFromTaskDeadline = (
-    deadlineDate: Date,
-    currentDate: Date,
-    concluded: boolean
-  ) => {
-    if (concluded) return TaskStatus.CONCLUDED;
-    else if (currentDate.getTime() <= deadlineDate.getTime())
-      return TaskStatus.PENDENT;
-    else if (currentDate.getTime() > deadlineDate.getTime())
-      return TaskStatus.DELAYED;
-  };
 
   const thisTaskStatus = checkTaskStatusFromTaskDeadline(
     deadlineDateAsDate,

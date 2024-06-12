@@ -16,6 +16,10 @@ export const dateToString = (date: Date, showYear?: boolean): string => {
     : `${day}/${month}`;
 };
 
+export const compareQueryStrings = (string1: string, string2: string): boolean => {
+  return string1.toLowerCase().includes(string2.toLowerCase())
+}
+
 export const formatWithLeadingZero = (number: number) =>
   number < 10 ? `0${number}` : number.toString();
 

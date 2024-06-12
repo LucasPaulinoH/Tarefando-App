@@ -12,13 +12,14 @@ const styles = StyleSheet.create({
   studentCardFirstHalf: {
     display: "flex",
     flexDirection: "column",
+    gap: 3
   },
 
   pendentTasksIconAndLabel: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 6,
   },
 });
 
