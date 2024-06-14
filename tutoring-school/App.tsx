@@ -18,6 +18,7 @@ import EditStudent from "./src/screens/guardian/EditStudent";
 import StudentDetails from "./src/screens/guardian/StudentDetails";
 import TaskDetails from "./src/screens/guardian/TaskDetails";
 import AddTask from "./src/screens/guardian/AddTask";
+import EditTask from "./src/screens/guardian/EditTask";
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,7 @@ export const Layout = () => {
               <Stack.Screen name="StudentDetails" component={StudentDetails} />
               <Stack.Screen name="TaskDetails" component={TaskDetails} />
               <Stack.Screen name="AddTask" component={AddTask} />
+              <Stack.Screen name="EditTask" component={EditTask} />
             </>
           ) : (
             <>

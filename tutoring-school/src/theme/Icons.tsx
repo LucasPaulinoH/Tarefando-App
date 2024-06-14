@@ -37,4 +37,9 @@ export const LoginIcon = (props: any): IconElement => (
 );
 
 
+export const MoreOptionsVerticalIcon = (props: any): IconElement => (
+  <Icon {...props} name="more-vertical-outline" />
+);
+
+
          

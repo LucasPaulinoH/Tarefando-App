@@ -1,3 +1,13 @@
+import { useCallback, useEffect, useState } from "react";
+import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
+import {
+  DayPicker,
+  MonthPicker,
+  YEAR_LABELS,
+  YearPicker,
+  fillDaysOfMonth,
+  getDaysInMonth,
+} from "../../../components/BirthdatePickers";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -7,41 +17,49 @@ import {
   Text,
 } from "@ui-kitten/components";
 import { View } from "react-native";
-import { AddIcon } from "../../../theme/Icons";
-import {
-  DayPicker,
-  MonthPicker,
-  YEAR_LABELS,
-  YearPicker,
-  fillDaysOfMonth,
-} from "../../../components/BirthdatePickers";
-import { useCallback, useEffect, useState } from "react";
-import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
-import { Subject } from "../../../services/Subject/type";
-import subjectApi from "../../../services/Subject";
-import taskApi from "../../../services/Task";
-import { Task } from "../../../services/Task/type";
-import * as SecureStore from "expo-secure-store";
 import studentApi from "../../../services/Student";
+import subjectApi from "../../../services/Subject";
+import { EditIcon } from "../../../theme/Icons";
+import * as SecureStore from "expo-secure-store";
+import { Subject } from "../../../services/Subject/type";
+import { Task } from "../../../services/Task/type";
+import { CURRENT_DATE } from "../../../constants/date";
+import { getSubjectsFromATaskArray } from "../../../utils/generalFunctions";
+import taskApi from "../../../services/Task";
 
-const AddTask = ({ navigation }: any) => {
+const EditTask = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
 
+  const selectedTask: Task = JSON.parse(SecureStore.getItem("selectedTask")!);
+
   const [studentName, setStudentName] = useState("...");
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState(selectedTask.title);
+  const [description, setDescription] = useState(selectedTask.description);
+
   const [subject, setSubject] = useState("");
 
   const [autocompleteSubjects, setAutocompleteSubjects] = useState<Subject[]>(
     []
   );
 
-  const [dayIndex, setDayIndex] = useState<IndexPath>(new IndexPath(0));
-  const [monthIndex, setMonthIndex] = useState<IndexPath>(new IndexPath(0));
-  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(0));
+  const defaultBirthdate = new Date(selectedTask.deadlineDate);
+  const monthDaysQuantity = getDaysInMonth(
+    defaultBirthdate.getFullYear(),
+    defaultBirthdate.getMonth()
+  );
+
+  const [dayIndex, setDayIndex] = useState<IndexPath>(
+    new IndexPath(monthDaysQuantity - defaultBirthdate.getDate())
+  );
+  const [monthIndex, setMonthIndex] = useState<IndexPath>(
+    new IndexPath(defaultBirthdate.getMonth())
+  );
+  const [yearIndex, setYearIndex] = useState<IndexPath>(
+    new IndexPath(CURRENT_DATE.getFullYear() - defaultBirthdate.getFullYear())
+  );
 
   const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
   const selectedYearLabel = YEAR_LABELS[yearIndex.row];
@@ -59,18 +77,7 @@ const AddTask = ({ navigation }: any) => {
     }
   };
 
-  const filteredSubjects = autocompleteSubjects.filter((autocompleteSubject) =>
-    compareQueryStrings(autocompleteSubject.name, subject)
-  );
-
-  const onSelect = useCallback(
-    (index: number): void => {
-      setSubject(filteredSubjects[index].name);
-    },
-    [filteredSubjects]
-  );
-
-  const handleAddTaskClick = async () => {
+  const handleEditTask = async () => {
     try {
       let subjectId = "";
 
@@ -92,7 +99,7 @@ const AddTask = ({ navigation }: any) => {
         selectedDayLabel
       );
 
-      await taskApi.createTask({
+      await taskApi.updateTask(selectedTask.id!, {
         subjectId,
         title,
         description,
@@ -103,9 +110,20 @@ const AddTask = ({ navigation }: any) => {
 
       navigation.navigate("StudentDetails");
     } catch (error) {
-      console.error("Error adding a new task: ", error);
+      console.error("Error updating task: ", error);
     }
   };
+
+  const filteredSubjects = autocompleteSubjects.filter((autocompleteSubject) =>
+    compareQueryStrings(autocompleteSubject.name, subject)
+  );
+
+  const onSelect = useCallback(
+    (index: number): void => {
+      setSubject(filteredSubjects[index].name);
+    },
+    [filteredSubjects]
+  );
 
   const fetchTaskStudent = async () => {
     try {
@@ -119,13 +137,17 @@ const AddTask = ({ navigation }: any) => {
   };
 
   useEffect(() => {
+    getSubjectsFromATaskArray([selectedTask]).then((tasksSubjects) =>
+      setSubject(tasksSubjects![0].name)
+    );
     fetchTaskStudent();
     fetchSubjectsForAutocomplete();
   }, []);
 
   return (
     <View>
-      <Text category="h6">{`Nova tarefa de ${studentName}`}</Text>
+      <Text category="h6">Edição de tarefa</Text>
+      <Text category="s1">{studentName}</Text>
       <Input
         placeholder="Título *"
         value={title}
@@ -171,11 +193,11 @@ const AddTask = ({ navigation }: any) => {
           width="100%"
         />
       </View>
-      <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
-        Adicionar atividade
+      <Button accessoryLeft={EditIcon} onPress={handleEditTask}>
+        Confirmar edição
       </Button>
     </View>
   );
 };
 
-export default AddTask;
+export default EditTask;

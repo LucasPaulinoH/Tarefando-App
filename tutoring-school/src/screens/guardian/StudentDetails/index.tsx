@@ -1,8 +1,23 @@
 import { View } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Student } from "../../../services/Student/type";
-import { Button, Card, Input, Text } from "@ui-kitten/components";
-import { AddIcon, DeleteIcon, SearchIcon } from "../../../theme/Icons";
+import {
+  Button,
+  Card,
+  Icon,
+  Input,
+  Layout,
+  Modal,
+  Popover,
+  Text,
+} from "@ui-kitten/components";
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  MoreOptionsVerticalIcon,
+  SearchIcon,
+} from "../../../theme/Icons";
 import TaskStatusChip from "../../../components/TaskStatusChip";
 import styles from "./styles";
 import { Subject } from "../../../services/Subject/type";
@@ -12,14 +27,19 @@ import {
   getSubjectsFromATaskArray,
 } from "../../../utils/generalFunctions";
 import studentApi from "../../../services/Student";
+import taskApi from "../../../services/Task";
+import { Task } from "../../../services/Task/type";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
 
+  const [moreOptionsVisible, setMoreOptionsVisible] = useState(false);
+
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [student, setStudent] = useState<Student>({} as Student);
+  const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
 
   const handleTaskDetailsClick = (taskId: string) => {
     SecureStore.setItem("selectedTaskId", JSON.stringify(taskId));
@@ -38,6 +58,26 @@ const StudentDetails = ({ navigation }: any) => {
   const handleAddTaskClick = () => {
     SecureStore.setItem("selectedStudentId", JSON.stringify(student!.id));
     navigation.navigate("AddTask");
+  };
+
+  const handleEditTaskClick = (task: Task) => {
+    SecureStore.setItem("selectedTask", JSON.stringify(task));
+    navigation.navigate("EditTask");
+  };
+
+  const handleDeleteTaskClick = async (taskId: string) => {
+    try {
+      await taskApi.deleteTask(taskId);
+      fetchStudentDetails();
+      setMoreOptionsVisible(false);
+    } catch (error) {
+      console.error("Error deleting task: ", error);
+    }
+  };
+
+  const handleMoreOptionsClick = (task: Task) => {
+    setSelectedTask(task);
+    setMoreOptionsVisible(true);
   };
 
   useEffect(() => {
@@ -88,7 +128,35 @@ const StudentDetails = ({ navigation }: any) => {
                 deadlineDate={task.deadlineDate}
                 isConcluded={task.concluded!}
               />
-              <Button accessoryLeft={DeleteIcon} appearance="ghost" />
+              <Button
+                accessoryLeft={MoreOptionsVerticalIcon}
+                style={styles.moreOptionsButton}
+                appearance="outline"
+                onPress={() => handleMoreOptionsClick(task)}
+              />
+              <Modal
+                visible={moreOptionsVisible}
+                backdropStyle={styles.moreOptionsModal}
+                onBackdropPress={() => setMoreOptionsVisible(false)}
+              >
+                <Card disabled={true}>
+                  <View style={styles.modalCard}>
+                    <Text>{selectedTask.title}</Text>
+                    <Button
+                      accessoryLeft={EditIcon}
+                      onPress={() => handleEditTaskClick(task)}
+                    >
+                      Editar tarefa
+                    </Button>
+                    <Button
+                      accessoryLeft={DeleteIcon}
+                      onPress={() => handleDeleteTaskClick(selectedTask.id!)}
+                    >
+                      Excluir tarefa
+                    </Button>
+                  </View>
+                </Card>
+              </Modal>
             </View>
           </View>
         </Card>

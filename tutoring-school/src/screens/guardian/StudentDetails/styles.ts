@@ -11,7 +11,25 @@ const styles = StyleSheet.create({
   taskCardSecondHalf: {
     display: "flex",
     flexDirection: "row",
-    gap: 5
+    alignItems: "center",
+    gap: 5,
+  },
+
+  moreOptionsButton: {
+    width: 10,
+    height: 10,
+    margin: 0,
+    padding: 0,
+  },
+
+  moreOptionsModal: {
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+
+  modalCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10
   }
 });
 
