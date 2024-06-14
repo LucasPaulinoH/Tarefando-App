@@ -45,8 +45,8 @@ const GuardianHome = ({ navigation }: any) => {
     }
   };
 
-  const handleStudentDetailsClick = (student: Student) => {
-    SecureStore.setItem("selectedStudent", JSON.stringify(student));
+  const handleStudentDetailsClick = (studentId: string) => {
+    SecureStore.setItem("selectedStudentId", JSON.stringify(studentId));
     navigation.navigate("StudentDetails");
   };
 
@@ -108,7 +108,7 @@ const GuardianHome = ({ navigation }: any) => {
       {students.map((student: Student) => (
         <Card
           key={student.id}
-          onPress={() => handleStudentDetailsClick(student)}
+          onPress={() => handleStudentDetailsClick(student.id!)}
         >
           <View style={styles.studentCard}>
             <View style={styles.studentCardFirstHalf}>

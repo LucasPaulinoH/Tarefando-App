@@ -3,6 +3,7 @@ import { School } from "../../../services/School/type";
 import * as SecureStore from "expo-secure-store";
 import { Icon, Text } from "@ui-kitten/components";
 import styles from "./styles";
+import QRCode from "react-native-qrcode-svg";
 
 const SchoolDetails = () => {
   const selectedSchool: School = JSON.parse(
@@ -30,6 +31,7 @@ const SchoolDetails = () => {
           style={{ textAlign: "justify" }}
         >{`${selectedSchool.address}, ${selectedSchool.addressNumber} - ${selectedSchool.district}, ${selectedSchool.city} - ${selectedSchool.state}`}</Text>
       </View>
+      <QRCode value={selectedSchool.id} />
     </View>
   );
 };

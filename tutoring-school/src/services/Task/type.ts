@@ -6,4 +6,5 @@ export interface Task {
   images: string[];
   deadlineDate: Date;
   concluded?: boolean;
+  studentId: string;
 }

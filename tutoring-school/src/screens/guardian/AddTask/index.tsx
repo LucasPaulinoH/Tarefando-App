@@ -21,8 +21,13 @@ import { Subject } from "../../../services/Subject/type";
 import subjectApi from "../../../services/Subject";
 import taskApi from "../../../services/Task";
 import { Task } from "../../../services/Task/type";
+import * as SecureStore from "expo-secure-store";
 
-const AddTask = () => {
+const AddTask = ({ navigation }: any) => {
+  const selectedStudentId: string = JSON.parse(
+    SecureStore.getItem("selectedStudentId")!
+  );
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
@@ -84,15 +89,16 @@ const AddTask = () => {
         selectedDayLabel
       );
 
-      const newTaskResponse = await taskApi.createTask({
+      await taskApi.createTask({
         subjectId,
         title,
         description,
         deadlineDate,
         images: [],
+        studentId: selectedStudentId,
       } as Task);
 
-      console.log(newTaskResponse);
+      navigation.navigate("StudentDetails");
     } catch (error) {
       console.error("Error adding a new task: ", error);
     }

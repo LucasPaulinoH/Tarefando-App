@@ -9,6 +9,8 @@ const studentApi = {
     axios
       .post(`${CONTROLLER_URL}`, newStudent)
       .then((response) => response.data),
+  getStudent: (id: string): Promise<Student> =>
+    axios.get(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
   getStudentsFromGuardian: (guardianId: string): Promise<Student[]> =>
     axios
       .get(`${CONTROLLER_URL}/search?guardianId=${guardianId}`)

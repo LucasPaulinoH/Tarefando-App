@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Button, Input, Text } from "@ui-kitten/components";
 import styles from "./styles";
 import { useAuth } from "../../../context/AuthContext";
+import { LoginIcon } from "../../../theme/Icons";
 
 const Login = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
@@ -34,7 +35,7 @@ const Login = ({ navigation }: any) => {
           onChangeText={(password) => setPassword(password)}
           secureTextEntry
         />
-        <Button onPress={handleLogin} style={styles.loginButton}>
+        <Button onPress={handleLogin} style={styles.loginButton} accessoryLeft={LoginIcon}>
           Conectar-se
         </Button>
 

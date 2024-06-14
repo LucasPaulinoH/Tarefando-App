@@ -7,6 +7,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+
+  taskCardSecondHalf: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 5
+  }
 });
 
 export default styles;

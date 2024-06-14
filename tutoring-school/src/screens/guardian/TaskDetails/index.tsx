@@ -7,27 +7,47 @@ import styles from "./styles";
 import { dateToString } from "../../../utils/stringUtils";
 import subjectApi from "../../../services/Subject";
 import { useEffect, useState } from "react";
+import taskApi from "../../../services/Task";
 
 const TaskDetails = () => {
-  const selectedTask: Task = JSON.parse(SecureStore.getItem("selectedTask")!);
+  const selectedTaskId: string = JSON.parse(
+    SecureStore.getItem("selectedTaskId")!
+  );
+
+  const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
 
   const [subjectName, setSubjectName] = useState("...");
   const deadlineDateAsDate = new Date(selectedTask.deadlineDate);
 
-  const getSelectedTaskSubjectName = async () => {
+  const fetchSelectedTask = async () => {
     try {
-      const subjectResponse = await subjectApi.getSubject(
-        selectedTask.subjectId
-      );
-      setSubjectName(subjectResponse.name);
+      const selectedTaskResponse = await taskApi.getTask(selectedTaskId);
+      setSelectedTask(selectedTaskResponse);
     } catch (error) {
-      console.error("Error getting selected task subject: ", error);
+      console.error("Error fetching selected task: ", error);
+    }
+  };
+
+  const getSelectedTaskSubjectName = async () => {
+    if (selectedTask.subjectId) {
+      try {
+        const subjectResponse = await subjectApi.getSubject(
+          selectedTask.subjectId
+        );
+        setSubjectName(subjectResponse.name);
+      } catch (error) {
+        console.error("Error getting selected task subject: ", error);
+      }
     }
   };
 
   useEffect(() => {
-    getSelectedTaskSubjectName();
+    fetchSelectedTask();
   }, []);
+
+  useEffect(() => {
+    getSelectedTaskSubjectName();
+  }, [selectedTask]);
 
   return (
     <View>
@@ -39,15 +59,16 @@ const TaskDetails = () => {
         {selectedTask.description}
       </Text>
       <View>
-        {selectedTask.images.map((image, index) => (
-          <Image
-            source={{
-              uri: image,
-            }}
-            key={index}
-            style={styles.image}
-          />
-        ))}
+        {selectedTask.images?.length > 0 &&
+          selectedTask.images?.map((image, index) => (
+            <Image
+              source={{
+                uri: image,
+              }}
+              key={index}
+              style={styles.image}
+            />
+          ))}
       </View>
       <View style={styles.deadlineDateContainer}>
         <View style={styles.deadlineDateLabel}>
