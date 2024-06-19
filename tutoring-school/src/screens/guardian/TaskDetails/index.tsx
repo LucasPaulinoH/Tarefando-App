@@ -19,6 +19,8 @@ const TaskDetails = () => {
   const [subjectName, setSubjectName] = useState("...");
   const deadlineDateAsDate = new Date(selectedTask.deadlineDate);
 
+  const [refetch, setRefetch] = useState(false);
+
   const fetchSelectedTask = async () => {
     try {
       const selectedTaskResponse = await taskApi.getTask(selectedTaskId);
@@ -26,6 +28,19 @@ const TaskDetails = () => {
     } catch (error) {
       console.error("Error fetching selected task: ", error);
     }
+  };
+
+  const handleConcludeTaskClick = async () => {
+    try {
+      const response = await taskApi.toggleTaskConcluded(
+        selectedTask.id!,
+        true
+      );
+      setRefetch(true);
+    } catch (error) {
+      console.warn("Error concluding task: ", error);
+    }
+    setRefetch(false);
   };
 
   const getSelectedTaskSubjectName = async () => {
@@ -43,7 +58,7 @@ const TaskDetails = () => {
 
   useEffect(() => {
     fetchSelectedTask();
-  }, []);
+  }, [refetch]);
 
   useEffect(() => {
     getSelectedTaskSubjectName();
@@ -84,6 +99,7 @@ const TaskDetails = () => {
           )}
           style={styles.concludeButton}
           appearance="filled"
+          onPress={handleConcludeTaskClick}
         >
           {() => (
             <Text style={styles.concludeButtonLabel}>

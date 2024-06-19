@@ -21,7 +21,7 @@ import {
 import TaskStatusChip from "../../../components/TaskStatusChip";
 import styles from "./styles";
 import { Subject } from "../../../services/Subject/type";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   calculateAge,
   getSubjectsFromATaskArray,
@@ -29,6 +29,7 @@ import {
 import studentApi from "../../../services/Student";
 import taskApi from "../../../services/Task";
 import { Task } from "../../../services/Task/type";
+import { useFocusEffect } from "@react-navigation/native";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
@@ -80,9 +81,11 @@ const StudentDetails = ({ navigation }: any) => {
     setMoreOptionsVisible(true);
   };
 
-  useEffect(() => {
-    fetchStudentDetails();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudentDetails();
+    }, [])
+  );
 
   useEffect(() => {
     getSubjectsFromATaskArray(student!.tasks!).then((tasksSubjects) =>

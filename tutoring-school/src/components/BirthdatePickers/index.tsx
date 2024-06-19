@@ -12,7 +12,7 @@ export const fillDaysOfMonth = (year: number, month: number): number[] => {
   const days = [];
   const monthDaysQuantity = getDaysInMonth(year, month);
 
-  for (let iterableDay = monthDaysQuantity; iterableDay >= 1; iterableDay--) {
+  for (let iterableDay = 1; iterableDay < monthDaysQuantity; iterableDay++) {
     days.push(iterableDay);
   }
 
@@ -22,7 +22,7 @@ export const fillDaysOfMonth = (year: number, month: number): number[] => {
 const fillYearList = (): number[] => {
   const years = [];
 
-  for (let iterableYear = CURRENT_YEAR; iterableYear >= 1980; iterableYear--) {
+  for (let iterableYear = CURRENT_YEAR; iterableYear <= CURRENT_YEAR + 10; iterableYear++) {
     years.push(iterableYear);
   }
 

@@ -13,6 +13,10 @@ const taskApi = {
     axios
       .put(`${CONTROLLER_URL}/${taskId}`, updatedTask)
       .then((response) => response.data),
+  toggleTaskConcluded: (taskId: string, isConcluded: boolean): Promise<Task> =>
+    axios
+      .put(`${CONTROLLER_URL}/${taskId}/${isConcluded}`)
+      .then((response) => response.data),
   deleteTask: (taskId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${taskId}`)
