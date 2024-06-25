@@ -19,17 +19,34 @@ export const fillDaysOfMonth = (year: number, month: number): number[] => {
   return days;
 };
 
-const fillYearList = (): number[] => {
+export const fillYearList = (
+  showPastYears: boolean,
+  showFutureYears: boolean
+): number[] => {
   const years = [];
 
-  for (let iterableYear = CURRENT_YEAR; iterableYear <= CURRENT_YEAR + 10; iterableYear++) {
+  let startingYear = CURRENT_YEAR;
+  let endingYear = CURRENT_YEAR;
+
+  if (showPastYears && showFutureYears) {
+    startingYear -= 50;
+    endingYear += 10;
+  } else if (showPastYears) {
+    startingYear -= 50;
+  } else if (showFutureYears) {
+    endingYear += 10;
+  }
+
+  for (
+    let iterableYear = endingYear;
+    iterableYear >= startingYear;
+    iterableYear--
+  ) {
     years.push(iterableYear);
   }
 
   return years;
 };
-
-export const YEAR_LABELS = fillYearList();
 
 interface DatePickerProps {
   selectedLabel: string | number;
@@ -38,6 +55,8 @@ interface DatePickerProps {
   year?: number;
   month?: number;
   width?: string;
+  showPastYears?: boolean;
+  showFutureYears?: boolean;
 }
 
 export const DayPicker = (props: DatePickerProps) => {
@@ -87,9 +106,11 @@ export const YearPicker = (props: DatePickerProps) => {
       }}
       style={{ width: props.width }}
     >
-      {YEAR_LABELS.map((day, index) => (
-        <SelectItem title={day} key={index} />
-      ))}
+      {fillYearList(props.showPastYears!, props.showFutureYears!).map(
+        (day, index) => (
+          <SelectItem title={day} key={index} />
+        )
+      )}
     </Select>
   );
 };

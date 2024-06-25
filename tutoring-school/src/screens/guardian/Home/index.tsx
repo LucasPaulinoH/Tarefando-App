@@ -9,6 +9,7 @@ import {
   AddIcon,
   DeleteIcon,
   EditIcon,
+  LogoutIcon,
   PendentTaskIcon,
   SearchIcon,
 } from "../../../theme/Icons";
@@ -20,8 +21,9 @@ import { CURRENT_DATE } from "../../../constants/date";
 import { TaskStatus } from "../../../types/Types";
 
 const GuardianHome = ({ navigation }: any) => {
-  const { authState } = useAuth();
+  const { authState, onLogout } = useAuth();
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
 
   useEffect(() => {
@@ -94,8 +96,13 @@ const GuardianHome = ({ navigation }: any) => {
       : `${pendentTaskQuantity} atividades pendentes`;
   };
 
+  const filteredStudents = students.filter((student) =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <View>
+      <LogoutIcon onPress={onLogout} style={{ width: 32, height: 32 }} />
       <Button
         accessoryLeft={AddIcon}
         onPress={() => {
@@ -104,21 +111,34 @@ const GuardianHome = ({ navigation }: any) => {
       >
         Adicionar estudante
       </Button>
-      <Input placeholder="Buscar estudantes..." accessoryLeft={SearchIcon} />
-      {students.map((student: Student) => (
+      {students.length > 0 ? (
+        <Input
+          placeholder="Buscar estudantes..."
+          accessoryLeft={SearchIcon}
+          value={searchTerm}
+          onChangeText={(search) => setSearchTerm(search)}
+        />
+      ) : null}
+      {filteredStudents.map((student: Student) => (
         <Card
           key={student.id}
           onPress={() => handleStudentDetailsClick(student.id!)}
         >
           <View style={styles.studentCard}>
             <View style={styles.studentCardFirstHalf}>
-              <Text category="h6">{student.name}</Text>
+              <View style={styles.studentNameAndLinked}>
+                <Text category="h6">{student.name}</Text>
+              </View>
               <View style={styles.pendentTasksIconAndLabel}>
                 {(() => {
                   const pendentTasksQuantity = countPendentTasksInTaskArray(
                     student.tasks!
                   );
-                  return pendentTasksQuantity > 0 ? (
+                  return !student.schoolId ? (
+                    <>
+                      <Text>Sem vínculo escolar</Text>
+                    </>
+                  ) : pendentTasksQuantity > 0 ? (
                     <>
                       <PendentTaskIcon style={{ width: 20, height: 20 }} />
                       <Text>

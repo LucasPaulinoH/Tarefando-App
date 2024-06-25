@@ -11,10 +11,10 @@ import { AddIcon } from "../../../theme/Icons";
 import {
   DayPicker,
   MonthPicker,
-  YEAR_LABELS,
   YearPicker,
   fillDaysOfMonth,
-} from "../../../components/BirthdatePickers";
+  fillYearList,
+} from "../../../components/DatePickers";
 import { useCallback, useEffect, useState } from "react";
 import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
 import { Subject } from "../../../services/Subject/type";
@@ -35,16 +35,18 @@ const AddTask = ({ navigation }: any) => {
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
 
+  const YEAR_LIST = fillYearList(false, true);
+
   const [autocompleteSubjects, setAutocompleteSubjects] = useState<Subject[]>(
     []
   );
 
   const [dayIndex, setDayIndex] = useState<IndexPath>(new IndexPath(0));
   const [monthIndex, setMonthIndex] = useState<IndexPath>(new IndexPath(0));
-  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(0));
+  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(YEAR_LIST.length - 1));
 
   const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LABELS[yearIndex.row];
+  const selectedYearLabel = YEAR_LIST[yearIndex.row];
   const selectedDayLabel = fillDaysOfMonth(
     Number(selectedYearLabel),
     monthIndex.row

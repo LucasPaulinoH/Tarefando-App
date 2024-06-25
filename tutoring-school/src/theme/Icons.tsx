@@ -36,9 +36,18 @@ export const LoginIcon = (props: any): IconElement => (
   <Icon {...props} name="log-in-outline" />
 );
 
+export const LogoutIcon = (props: any): IconElement => (
+  <Icon {...props} name="log-out-outline" />
+);
+
+
 
 export const MoreOptionsVerticalIcon = (props: any): IconElement => (
   <Icon {...props} name="more-vertical-outline" />
+);
+
+export const UnlinkSchoolIcon = (props: any): IconElement => (
+  <Icon {...props} name="close-circle-outline" />
 );
 
 

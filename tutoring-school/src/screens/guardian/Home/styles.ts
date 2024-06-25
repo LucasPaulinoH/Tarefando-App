@@ -15,6 +15,13 @@ const styles = StyleSheet.create({
     gap: 3
   },
 
+  studentNameAndLinked: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 2
+  },
+
+
   pendentTasksIconAndLabel: {
     display: "flex",
     flexDirection: "row",

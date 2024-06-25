@@ -31,27 +31,28 @@ export const AuthProvider = ({ children }: any) => {
     user: User | null;
   }>({ token: null, authenticated: null, user: null });
 
-  // useEffect(() => {
-  //   const loadToken = async () => {
-  //     const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
+  useEffect(() => {
+    const loadToken = async () => {
+      const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
 
-  //     if (token) {
-  //       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      if (token) {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-  //       const loggedUserId = jwtDecode(token!).id;
+        const loggedUserId = jwtDecode(token!).id;
 
-  //       const loggedUser: User = await userApi.getUser(loggedUserId);
-  //       setAuthState({ token, authenticated: true, user: loggedUser });
-  //     } else {
-  //       setAuthState({ token: null, authenticated: false, user: null });
-  //     }
-  //   };
+        const loggedUser: User = await userApi.getUser(loggedUserId);
+        setAuthState({ token, authenticated: true, user: loggedUser });
+      } else {
+        setAuthState({ token: null, authenticated: false, user: null });
+      }
+    };
 
-  //   loadToken();
-  // }, []);
+    loadToken();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
+      
       const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password,
@@ -73,7 +74,7 @@ export const AuthProvider = ({ children }: any) => {
 
       await SecureStore.setItemAsync(TOKEN_KEY, loginResponse.data.token);
     } catch (error) {
-      console.error("Login error:", error);
+      console.log("Login error:", error);
     }
   };
 
@@ -92,8 +93,6 @@ export const AuthProvider = ({ children }: any) => {
 
   const logout = async () => {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
-
-    axios.defaults.headers.common["Authorization"] = "";
 
     setAuthState({
       token: null,

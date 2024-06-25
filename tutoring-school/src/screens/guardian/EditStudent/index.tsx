@@ -9,7 +9,7 @@ import {
   YearPicker,
   fillDaysOfMonth,
   getDaysInMonth,
-} from "../../../components/BirthdatePickers";
+} from "../../../components/DatePickers";
 import { View } from "react-native";
 import { EditIcon } from "../../../theme/Icons";
 import { Student } from "../../../services/Student/type";
@@ -60,9 +60,9 @@ const EditStudent = ({ navigation }: any) => {
         selectedDayLabel
       );
 
-      const { guardianId } = selectedStudent;
+      const { userId: guardianId } = selectedStudent;
       await studentApi.updateStudent(selectedStudent.id!, {
-        guardianId,
+        userId: guardianId,
         name,
         birthdate,
         grade,

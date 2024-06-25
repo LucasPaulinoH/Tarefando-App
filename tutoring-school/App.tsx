@@ -11,7 +11,7 @@ import GuardianHome from "./src/screens/guardian/Home";
 import TutorHome from "./src/screens/tutor/Home";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import AddSchool from "./src/screens/tutor/AddSchool";
-import SchoolDetails from "./src/screens/tutor/SchoolDetails";
+import TutorSchoolDetails from "./src/screens/tutor/SchoolDetails";
 import EditSchool from "./src/screens/tutor/EditSchool";
 import AddStudent from "./src/screens/guardian/AddStudent";
 import EditStudent from "./src/screens/guardian/EditStudent";
@@ -19,6 +19,7 @@ import StudentDetails from "./src/screens/guardian/StudentDetails";
 import TaskDetails from "./src/screens/guardian/TaskDetails";
 import AddTask from "./src/screens/guardian/AddTask";
 import EditTask from "./src/screens/guardian/EditTask";
+import GuardianSchoolDetails from "./src/screens/guardian/SchoolDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,13 +52,20 @@ export const Layout = () => {
               <Stack.Screen name="TaskDetails" component={TaskDetails} />
               <Stack.Screen name="AddTask" component={AddTask} />
               <Stack.Screen name="EditTask" component={EditTask} />
+              <Stack.Screen
+                name="SchoolDetails"
+                component={GuardianSchoolDetails}
+              />
             </>
           ) : (
             <>
               <Stack.Screen name="TutorHome" component={TutorHome} />
               <Stack.Screen name="AddSchool" component={AddSchool} />
               <Stack.Screen name="EditSchool" component={EditSchool} />
-              <Stack.Screen name="SchoolDetails" component={SchoolDetails} />
+              <Stack.Screen
+                name="SchoolDetails"
+                component={TutorSchoolDetails}
+              />
             </>
           )
         ) : (

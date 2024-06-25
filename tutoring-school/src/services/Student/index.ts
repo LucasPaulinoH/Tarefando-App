@@ -13,7 +13,11 @@ const studentApi = {
     axios.get(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
   getStudentsFromGuardian: (guardianId: string): Promise<Student[]> =>
     axios
-      .get(`${CONTROLLER_URL}/search?guardianId=${guardianId}`)
+      .get(`${CONTROLLER_URL}/guardian?userId=${guardianId}`)
+      .then((response) => response.data),
+  getStudentsFromSchool: (schoolId: string): Promise<Student[]> =>
+    axios
+      .get(`${CONTROLLER_URL}/school?schoolId=${schoolId}`)
       .then((response) => response.data),
   updateStudent: (
     studentId: string,
@@ -21,6 +25,10 @@ const studentApi = {
   ): Promise<Student> =>
     axios
       .put(`${CONTROLLER_URL}/${studentId}`, updatedStudent)
+      .then((response) => response.data),
+  unlinkStudentFromSchool: (studentId: string): Promise<Student> =>
+    axios
+      .patch(`${CONTROLLER_URL}/unlink-from-school/${studentId}`)
       .then((response) => response.data),
   deleteStudent: (studentId: string): Promise<void> =>
     axios

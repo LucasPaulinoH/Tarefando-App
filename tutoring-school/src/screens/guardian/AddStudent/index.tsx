@@ -6,10 +6,10 @@ import { MONTH_LABELS } from "../../../utils/stringUtils";
 import {
   DayPicker,
   MonthPicker,
-  YEAR_LABELS,
   YearPicker,
   fillDaysOfMonth,
-} from "../../../components/BirthdatePickers";
+  fillYearList,
+} from "../../../components/DatePickers";
 import studentApi from "../../../services/Student";
 import { Student } from "../../../services/Student/type";
 import { useAuth } from "../../../context/AuthContext";
@@ -19,21 +19,23 @@ const AddStudent = ({ navigation }: any) => {
 
   const [name, setName] = useState("");
 
+  const YEAR_LIST = fillYearList(true, false);
+
   const [dayIndex, setDayIndex] = useState<IndexPath>(new IndexPath(0));
   const [monthIndex, setMonthIndex] = useState<IndexPath>(new IndexPath(0));
-  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(0));
+  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(1));
 
   const [grade, setGrade] = useState("");
 
   const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LABELS[yearIndex.row];
+  const selectedYearLabel = YEAR_LIST[yearIndex.row];
   const selectedDayLabel = fillDaysOfMonth(
     Number(selectedYearLabel),
     monthIndex.row
   )[dayIndex.row];
 
   const handleAddStudentClick = async () => {
-    const guardianId = authState?.user?.id;
+    const userId = authState?.user?.id;
     try {
       const birthdate = new Date(
         selectedYearLabel,
@@ -42,7 +44,7 @@ const AddStudent = ({ navigation }: any) => {
       );
 
       await studentApi.createStudent({
-        guardianId,
+        userId,
         name,
         grade,
         birthdate,
@@ -82,6 +84,7 @@ const AddStudent = ({ navigation }: any) => {
           selectedLabel={selectedYearLabel}
           index={yearIndex}
           setIndex={setYearIndex}
+          showPastYears
           width="100%"
         />
       </View>

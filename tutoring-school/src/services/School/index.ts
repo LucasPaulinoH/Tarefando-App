@@ -9,6 +9,8 @@ const schoolApi = {
     axios
       .post(`${CONTROLLER_URL}`, newSchool)
       .then((response) => response.data),
+  getSchool: (id: string): Promise<School> =>
+    axios.get(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
   getSchoolsFromTutor: (tutorId: string): Promise<School[]> =>
     axios
       .get(`${CONTROLLER_URL}/search?tutorId=${tutorId}`)

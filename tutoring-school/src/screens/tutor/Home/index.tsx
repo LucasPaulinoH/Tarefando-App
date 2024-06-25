@@ -15,10 +15,16 @@ import styles from "./styles";
 import { shortenLargeTexts } from "../../../utils/stringUtils";
 import * as SecureStore from "expo-secure-store";
 import { useFocusEffect } from "@react-navigation/native";
-import { AddIcon, DeleteIcon, EditIcon, SearchIcon } from "../../../theme/Icons";
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  LogoutIcon,
+  SearchIcon,
+} from "../../../theme/Icons";
 
 const TutorHome = ({ navigation }: any) => {
-  const { authState } = useAuth();
+  const { authState, onLogout } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
@@ -48,8 +54,8 @@ const TutorHome = ({ navigation }: any) => {
     school.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSchoolDetailsClick = (school: School) => {
-    SecureStore.setItem("selectedSchool", JSON.stringify(school));
+  const handleSchoolDetailsClick = (schoolId: string) => {
+    SecureStore.setItem("selectedSchoolId", JSON.stringify(schoolId));
     navigation.navigate("SchoolDetails");
   };
 
@@ -69,6 +75,7 @@ const TutorHome = ({ navigation }: any) => {
 
   return (
     <View>
+      <LogoutIcon onPress={onLogout} style={{width: 32, height: 32}}/>
       <Button
         accessoryLeft={AddIcon}
         onPress={() => navigation.navigate("AddSchool")}
@@ -82,14 +89,24 @@ const TutorHome = ({ navigation }: any) => {
         onChangeText={(search) => setSearchTerm(search)}
       />
       {filteredSchools.map((school: School) => (
-        <Card key={school.id} onPress={() => handleSchoolDetailsClick(school)}>
+        <Card
+          key={school.id}
+          onPress={() => handleSchoolDetailsClick(school.id!)}
+        >
           <View style={styles.schoolCard}>
             <View style={styles.schoolCardFirstHalf}>
-              <Avatar size="giant" src="" style={styles.schoolAvatar} />
+              <Avatar
+                size="giant"
+                src={school.profileImage}
+                style={styles.schoolAvatar}
+              />
 
               <View>
                 <Text category="h6">{school.name}</Text>
-                <Text>{shortenLargeTexts(`${school.district}`, 20)}</Text>
+                <Text>{`${shortenLargeTexts(
+                  `${school.district}`,
+                  20
+                )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
               </View>
             </View>
 

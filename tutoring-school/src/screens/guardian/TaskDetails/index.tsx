@@ -32,10 +32,7 @@ const TaskDetails = () => {
 
   const handleConcludeTaskClick = async () => {
     try {
-      const response = await taskApi.toggleTaskConcluded(
-        selectedTask.id!,
-        true
-      );
+      await taskApi.toggleTaskConcluded(selectedTask.id!, true);
       setRefetch(true);
     } catch (error) {
       console.warn("Error concluding task: ", error);

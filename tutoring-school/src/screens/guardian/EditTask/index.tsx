@@ -3,11 +3,11 @@ import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
 import {
   DayPicker,
   MonthPicker,
-  YEAR_LABELS,
   YearPicker,
   fillDaysOfMonth,
+  fillYearList,
   getDaysInMonth,
-} from "../../../components/BirthdatePickers";
+} from "../../../components/DatePickers";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -41,6 +41,8 @@ const EditTask = ({ navigation }: any) => {
 
   const [subject, setSubject] = useState("");
 
+  const YEAR_LIST = fillYearList(false, true);
+
   const [autocompleteSubjects, setAutocompleteSubjects] = useState<Subject[]>(
     []
   );
@@ -62,7 +64,12 @@ const EditTask = ({ navigation }: any) => {
   );
 
   const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LABELS[yearIndex.row];
+  const selectedYearLabel =
+    YEAR_LIST[
+      YEAR_LIST.findIndex(
+        (value) => value === new Date(selectedTask.deadlineDate).getFullYear()
+      )
+    ];
   const selectedDayLabel = fillDaysOfMonth(
     Number(selectedYearLabel),
     monthIndex.row
