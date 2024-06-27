@@ -33,17 +33,21 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const loadToken = async () => {
-      const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
+      try {
+        const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
 
-      if (token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        if (token) {
+          axios.defaults.headers.common["Authorization"] = `${token}`;
 
-        const loggedUserId = jwtDecode(token!).id;
+          const loggedUserId = jwtDecode(token!).id;
 
-        const loggedUser: User = await userApi.getUser(loggedUserId);
-        setAuthState({ token, authenticated: true, user: loggedUser });
-      } else {
-        setAuthState({ token: null, authenticated: false, user: null });
+          const loggedUser: User = await userApi.getUser(loggedUserId);
+          setAuthState({ token, authenticated: true, user: loggedUser });
+        } else {
+          setAuthState({ token: null, authenticated: false, user: null });
+        }
+      } catch (error) {
+        console.log("Login error:", error?.response);
       }
     };
 
@@ -52,7 +56,6 @@ export const AuthProvider = ({ children }: any) => {
 
   const login = async (email: string, password: string) => {
     try {
-      
       const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password,
@@ -60,7 +63,7 @@ export const AuthProvider = ({ children }: any) => {
 
       axios.defaults.headers.common[
         "Authorization"
-      ] = `Bearer ${loginResponse.data.token}`;
+      ] = `${loginResponse.data.token}`;
 
       const loggedUserId = jwtDecode(loginResponse.data.token).id;
 
@@ -74,7 +77,7 @@ export const AuthProvider = ({ children }: any) => {
 
       await SecureStore.setItemAsync(TOKEN_KEY, loginResponse.data.token);
     } catch (error) {
-      console.log("Login error:", error);
+      console.log("Login error:", error?.response);
     }
   };
 
