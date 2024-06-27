@@ -4,13 +4,9 @@ import { Student } from "../../../services/Student/type";
 import {
   Avatar,
   Button,
-  ButtonGroup,
   Card,
-  Icon,
   Input,
-  Layout,
   Modal,
-  Popover,
   Text,
 } from "@ui-kitten/components";
 import {
@@ -36,11 +32,20 @@ import { useFocusEffect } from "@react-navigation/native";
 import { School } from "../../../services/School/type";
 import schoolApi from "../../../services/School";
 import { shortenLargeTexts } from "../../../utils/stringUtils";
+import { CameraView, useCameraPermissions } from "expo-camera";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
+
+  const [wantsToScanLinkingCode, setWantsToScanLinkingCode] = useState(false);
+
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [readCode, setReadCode] = useState("");
+
+  const [isScannedSchoolIdValid, setIsScannedSchoolIdValid] = useState(false);
+  const [foundedSchool, setFoundedSchool] = useState({} as School);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -63,7 +68,7 @@ const StudentDetails = ({ navigation }: any) => {
       setStudent(studentResponse);
       setTasks(studentResponse.tasks!);
     } catch (error) {
-      console.error("Error fetching user details: ", error);
+      console.log("Error fetching user details: ", error);
     }
   };
 
@@ -72,7 +77,7 @@ const StudentDetails = ({ navigation }: any) => {
       const schoolResponse = await schoolApi.getSchool(student.schoolId!);
       setSchool(schoolResponse);
     } catch (error) {
-      console.error("Error fetching student school: ", error);
+      console.log("Error fetching student school: ", error);
     }
   };
 
@@ -92,7 +97,7 @@ const StudentDetails = ({ navigation }: any) => {
       fetchStudentDetails();
       setMoreOptionsVisible(false);
     } catch (error) {
-      console.error("Error deleting task: ", error);
+      console.log("Error deleting task: ", error);
     }
   };
 
@@ -106,7 +111,31 @@ const StudentDetails = ({ navigation }: any) => {
       await studentApi.unlinkStudentFromSchool(selectedStudentId);
       navigation.navigate("GuardianHome");
     } catch (error) {
-      console.error("Error unlinking student from school: ", error);
+      console.log("Error unlinking student from school: ", error);
+    }
+  };
+
+  const handleLinkStudentToSchool = async () => {
+    try {
+      await studentApi.linkStudentToSchool(
+        selectedStudentId,
+        foundedSchool.id!
+      );
+      fetchStudentDetails();
+    } catch (error) {
+      console.log("Error linking student to school: ", error);
+    }
+  };
+
+  const handleOnSchoolIdRead = async () => {
+    try {
+      const schoolResponse = await schoolApi.getSchool(readCode);
+      if (schoolResponse) {
+        setIsScannedSchoolIdValid(true);
+        setFoundedSchool(schoolResponse);
+      }
+    } catch (error) {
+      console.log("The school id read is invalid: ", error);
     }
   };
 
@@ -122,7 +151,7 @@ const StudentDetails = ({ navigation }: any) => {
   );
 
   useEffect(() => {
-    fetchSchool();
+    if (student.schoolId) fetchSchool();
   }, [student]);
 
   useEffect(() => {
@@ -130,6 +159,10 @@ const StudentDetails = ({ navigation }: any) => {
       setSubjects(tasksSubjects!)
     );
   }, [student]);
+
+  useEffect(() => {
+    if (readCode) handleOnSchoolIdRead();
+  }, [readCode]);
 
   const showStudentAgeString = (ageInYears: number): string => {
     return ageInYears !== 1 ? `${ageInYears} anos` : `${ageInYears} ano`;
@@ -183,11 +216,6 @@ const StudentDetails = ({ navigation }: any) => {
               </View>
             </View>
           </Card>
-        </>
-      ) : null}
-
-      {student.schoolId ? (
-        <>
           <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
             Adicionar atividade
           </Button>
@@ -257,7 +285,60 @@ const StudentDetails = ({ navigation }: any) => {
             </Card>
           ))}
         </>
-      ) : null}
+      ) : !cameraPermission ? (
+        <></>
+      ) : !cameraPermission.granted ? (
+        <View>
+          <Button onPress={requestCameraPermission}>
+            <Text></Text>
+          </Button>
+        </View>
+      ) : !wantsToScanLinkingCode ? (
+        <View>
+          <Button onPress={() => setWantsToScanLinkingCode(true)}>
+            <Text>Escanear código de vinculação</Text>
+          </Button>
+        </View>
+      ) : !isScannedSchoolIdValid ? (
+        <>
+          <CameraView
+            style={{ width: 400, height: 400}}
+            facing="back"
+            barcodeScannerSettings={{
+              barcodeTypes: ["qr"],
+            }}
+            onBarcodeScanned={(value) => setReadCode(value.raw!)}
+          />
+          <Button
+            onPress={() => {
+              setWantsToScanLinkingCode(false);
+            }}
+            appearance="outline"
+          >
+            <Text>Cancelar</Text>
+          </Button>
+        </>
+      ) : (
+        <View>
+          <Text category="h6">{`Deseja vincular ${student.name} à ${
+            foundedSchool.name ?? "..."
+          }?`}</Text>
+          <Button onPress={handleLinkStudentToSchool}>
+            <Text>Sim</Text>
+          </Button>
+          <Button
+            onPress={() => {
+              setIsScannedSchoolIdValid(false);
+              setWantsToScanLinkingCode(false);
+              setReadCode("");
+              setFoundedSchool({} as School);
+            }}
+            appearance="outline"
+          >
+            <Text>Cancelar</Text>
+          </Button>
+        </View>
+      )}
     </View>
   );
 };

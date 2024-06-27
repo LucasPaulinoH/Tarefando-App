@@ -30,6 +30,13 @@ const studentApi = {
     axios
       .patch(`${CONTROLLER_URL}/unlink-from-school/${studentId}`)
       .then((response) => response.data),
+  linkStudentToSchool: (
+    studentId: string,
+    schoolId: string
+  ): Promise<Student> =>
+    axios
+      .patch(`${CONTROLLER_URL}/link-to-school/${studentId}/${schoolId}`)
+      .then((response) => response.data),
   deleteStudent: (studentId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${studentId}`)

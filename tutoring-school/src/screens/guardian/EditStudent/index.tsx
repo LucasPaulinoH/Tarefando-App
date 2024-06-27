@@ -5,9 +5,9 @@ import { MONTH_LABELS } from "../../../utils/stringUtils";
 import {
   DayPicker,
   MonthPicker,
-  YEAR_LABELS,
   YearPicker,
   fillDaysOfMonth,
+  fillYearList,
   getDaysInMonth,
 } from "../../../components/DatePickers";
 import { View } from "react-native";
@@ -33,6 +33,8 @@ const EditStudent = ({ navigation }: any) => {
     defaultBirthdate.getMonth()
   );
 
+  const YEAR_LIST = fillYearList(true, false);
+
   const [dayIndex, setDayIndex] = useState<IndexPath>(
     new IndexPath(monthDaysQuantity - defaultBirthdate.getDate())
   );
@@ -46,7 +48,7 @@ const EditStudent = ({ navigation }: any) => {
   const [grade, setGrade] = useState(selectedStudent.grade);
 
   const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LABELS[yearIndex.row];
+  const selectedYearLabel = YEAR_LIST[yearIndex.row];
   const selectedDayLabel = fillDaysOfMonth(
     Number(selectedYearLabel),
     monthIndex.row
