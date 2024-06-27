@@ -27,9 +27,17 @@ const RoleSelectCard = (props: RoleSelectCardProps) => {
     >
       <View style={styles.innerCard}>
         {role === UserRole.TUTOR ? (
-          <TutorIcon style={{ color: selected ? light : highlight }} />
+          <TutorIcon
+            width={65}
+            height={65}
+            style={{ color: selected ? light : highlight }}
+          />
         ) : (
-          <GuardianIcon style={{ color: selected ? light : highlight }} />
+          <GuardianIcon
+            width={65}
+            height={65}
+            style={{ color: selected ? light : highlight }}
+          />
         )}
         <Text
           category="s1"

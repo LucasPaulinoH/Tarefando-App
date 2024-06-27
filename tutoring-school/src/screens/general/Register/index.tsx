@@ -9,7 +9,7 @@ import { UserRole } from "../../../types/Types";
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

@@ -40,8 +40,6 @@ export const LogoutIcon = (props: any): IconElement => (
   <Icon {...props} name="log-out-outline" />
 );
 
-
-
 export const MoreOptionsVerticalIcon = (props: any): IconElement => (
   <Icon {...props} name="more-vertical-outline" />
 );
@@ -50,5 +48,19 @@ export const UnlinkSchoolIcon = (props: any): IconElement => (
   <Icon {...props} name="close-circle-outline" />
 );
 
+export const StudentsIcon = (props: any): IconElement => (
+  <Icon {...props} name="people-outline" />
+);
 
-         
+export const AnnouncementIcon = (props: any): IconElement => (
+  <Icon {...props} name="bell-outline" />
+);
+
+export const PersonIcon = (props: any): IconElement => (
+  <Icon {...props} name="person-outline" />
+);
+
+export const SchoolIcon = (props: any): IconElement => (
+  <Icon {...props} name="home-outline" />
+);
+

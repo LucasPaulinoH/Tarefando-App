@@ -75,7 +75,6 @@ const TutorHome = ({ navigation }: any) => {
 
   return (
     <View>
-      <LogoutIcon onPress={onLogout} style={{width: 32, height: 32}}/>
       <Button
         accessoryLeft={AddIcon}
         onPress={() => navigation.navigate("AddSchool")}

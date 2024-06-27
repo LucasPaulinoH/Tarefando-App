@@ -9,16 +9,12 @@ import {
   AddIcon,
   DeleteIcon,
   EditIcon,
-  LogoutIcon,
   PendentTaskIcon,
   SearchIcon,
 } from "../../../theme/Icons";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { Task } from "../../../services/Task/type";
-import { checkTaskStatusFromTaskDeadline as checkTaskStatus } from "../../../utils/generalFunctions";
-import { CURRENT_DATE } from "../../../constants/date";
-import { TaskStatus } from "../../../types/Types";
 
 const GuardianHome = ({ navigation }: any) => {
   const { authState, onLogout } = useAuth();
@@ -73,14 +69,7 @@ const GuardianHome = ({ navigation }: any) => {
     for (let i = 0; i < tasks.length; i++) {
       iterableTask = tasks[i];
 
-      if (
-        checkTaskStatus(
-          new Date(iterableTask.deadlineDate),
-          CURRENT_DATE,
-          iterableTask.concluded!
-        ) === TaskStatus.PENDENT
-      )
-        pendentTaskCounter++;
+      if (!iterableTask.concluded) pendentTaskCounter++;
     }
 
     return pendentTaskCounter;
@@ -102,7 +91,6 @@ const GuardianHome = ({ navigation }: any) => {
 
   return (
     <View>
-      <LogoutIcon onPress={onLogout} style={{ width: 32, height: 32 }} />
       <Button
         accessoryLeft={AddIcon}
         onPress={() => {
