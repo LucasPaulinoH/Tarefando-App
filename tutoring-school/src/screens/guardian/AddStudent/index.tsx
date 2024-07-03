@@ -43,12 +43,14 @@ const AddStudent = ({ navigation }: any) => {
         selectedDayLabel
       );
 
-      await studentApi.createStudent({
-        userId,
+      const newStudent: Student = {
+        user: userId,
         name,
         grade,
         birthdate,
-      } as Student);
+      };
+
+      await studentApi.createStudent(newStudent);
 
       navigation.navigate("GuardianHome");
     } catch (error) {

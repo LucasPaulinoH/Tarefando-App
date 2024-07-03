@@ -33,12 +33,17 @@ import { School } from "../../../services/School/type";
 import schoolApi from "../../../services/School";
 import { shortenLargeTexts } from "../../../utils/stringUtils";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useAuth } from "../../../context/AuthContext";
+import { UserRole } from "../../../types/Types";
+import userApi from "../../../services/User";
+import { User, UserCard } from "../../../services/User/type";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
 
+  const { authState } = useAuth();
   const [wantsToScanLinkingCode, setWantsToScanLinkingCode] = useState(false);
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -56,6 +61,10 @@ const StudentDetails = ({ navigation }: any) => {
   const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [school, setSchool] = useState<School>({} as School);
+  const [guardianCard, setGuardianCard] = useState<UserCard>({
+    userName: "Carregando...",
+    profileImage: "",
+  });
 
   const handleTaskDetailsClick = (taskId: string) => {
     SecureStore.setItem("selectedTaskId", JSON.stringify(taskId));
@@ -78,6 +87,15 @@ const StudentDetails = ({ navigation }: any) => {
       setSchool(schoolResponse);
     } catch (error) {
       console.log("Error fetching student school: ", error);
+    }
+  };
+
+  const fetchGuardian = async () => {
+    try {
+      const guardianCardResponse = await userApi.getUserCard(student.user!);
+      setGuardianCard(guardianCardResponse);
+    } catch (error) {
+      console.log("Error fetching guardian: ", error);
     }
   };
 
@@ -150,8 +168,13 @@ const StudentDetails = ({ navigation }: any) => {
     }, [])
   );
 
+  const isUserTutor = () => {
+    return authState?.user?.role === UserRole.TUTOR;
+  };
+
   useEffect(() => {
-    if (student.schoolId) fetchSchool();
+    if (student.schoolId && !isUserTutor()) fetchSchool();
+    if (isUserTutor()) fetchGuardian();
   }, [student]);
 
   useEffect(() => {
@@ -188,38 +211,61 @@ const StudentDetails = ({ navigation }: any) => {
       </Text>
       {student.schoolId ? (
         <>
-          <Text category="h6">Vinculado à:</Text>
-          <Card onPress={handleSchoolClick}>
-            <View style={styles.schoolCard}>
-              <View style={styles.schoolCardFirstHalf}>
-                <Avatar
-                  size="giant"
-                  src={school.profileImage}
-                  style={styles.schoolAvatar}
-                />
+          {!isUserTutor() ? (
+            <>
+              <Text category="h6">Vinculado à:</Text>
+              <Card onPress={handleSchoolClick}>
+                <View style={styles.schoolCard}>
+                  <View style={styles.schoolCardFirstHalf}>
+                    <Avatar
+                      size="giant"
+                      src={school.profileImage}
+                      style={styles.schoolAvatar}
+                    />
 
-                <View>
-                  <Text category="h6">{school.name ?? "..."}</Text>
-                  <Text>{`${shortenLargeTexts(
-                    `${school.district}`,
-                    20
-                  )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
+                    <View>
+                      <Text category="h6">{school.name ?? "..."}</Text>
+                      <Text>{`${shortenLargeTexts(
+                        `${school.district}`,
+                        20
+                      )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
+                    </View>
+                  </View>
+
+                  <View>
+                    <Button
+                      accessoryLeft={UnlinkSchoolIcon}
+                      onPress={handleUnlinkFromSchool}
+                      appearance="ghost"
+                    />
+                  </View>
                 </View>
-              </View>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card>
+                <View style={styles.schoolCard}>
+                  <View style={styles.schoolCardFirstHalf}>
+                    <Avatar
+                      size="giant"
+                      src={guardianCard.profileImage}
+                      style={styles.schoolAvatar}
+                    />
 
-              <View>
-                <Button
-                  accessoryLeft={UnlinkSchoolIcon}
-                  onPress={handleUnlinkFromSchool}
-                  appearance="ghost"
-                />
-              </View>
-            </View>
-          </Card>
+                    <View>
+                      <Text category="h6">{guardianCard.userName}</Text>
+                      <Text>Responsável</Text>
+                    </View>
+                  </View>
+                </View>
+              </Card>
+            </>
+          )}
           <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
             Adicionar atividade
           </Button>
-          {filteredTasks.length > 0 ? (
+          {student.tasks!.length > 0 ? (
             <Input
               placeholder="Buscar atividade..."
               accessoryLeft={SearchIcon}
@@ -285,7 +331,7 @@ const StudentDetails = ({ navigation }: any) => {
             </Card>
           ))}
         </>
-      ) : !cameraPermission ? (
+      ) : isUserTutor() ? null : !cameraPermission ? (
         <></>
       ) : !cameraPermission.granted ? (
         <View>
@@ -302,7 +348,7 @@ const StudentDetails = ({ navigation }: any) => {
       ) : !isScannedSchoolIdValid ? (
         <>
           <CameraView
-            style={{ width: 400, height: 400}}
+            style={{ width: 400, height: 400 }}
             facing="back"
             barcodeScannerSettings={{
               barcodeTypes: ["qr"],

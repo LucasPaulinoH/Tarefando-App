@@ -1,6 +1,5 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import { TOKEN_KEY } from "../constants/StringContants";
 import * as SecureStore from "expo-secure-store";
 import { User } from "../services/User/type";
 import { API_BASE_URL } from "../services/api";
@@ -14,7 +13,7 @@ interface AuthProps {
     user: User | null;
   };
   onLogin?: (email: string, password: string) => Promise<any>;
-  onRegister?: ({}) => Promise<any>;
+  onRegister?: (userData: object) => Promise<any>;
   onLogout?: () => Promise<any>;
 }
 
@@ -34,12 +33,15 @@ export const AuthProvider = ({ children }: any) => {
   useEffect(() => {
     const loadToken = async () => {
       try {
-        const token: string | null = await SecureStore.getItemAsync(TOKEN_KEY);
+        const token: string | null = await SecureStore.getItemAsync(
+          "TOKEN_KEY"
+        );
 
         if (token) {
-          axios.defaults.headers.common["Authorization"] = `${token}`;
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          axios.defaults.withCredentials = true;
 
-          const loggedUserId = jwtDecode(token!).id;
+          const loggedUserId = jwtDecode<{ id: string }>(token).id;
 
           const loggedUser: User = await userApi.getUser(loggedUserId);
           setAuthState({ token, authenticated: true, user: loggedUser });
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }: any) => {
           setAuthState({ token: null, authenticated: false, user: null });
         }
       } catch (error) {
-        console.log("Login error:", error?.response);
+        console.log("Load token error:", error?.response);
       }
     };
 
@@ -56,16 +58,25 @@ export const AuthProvider = ({ children }: any) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password,
-      });
+      const loginResponse = await axios.post(
+        `${API_BASE_URL}/auth/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+
+      const csrfToken = loginResponse.headers["x-xsrf-token"];
+      if (csrfToken) {
+        axios.defaults.headers.common["X-XSRF-TOKEN"] = csrfToken;
+      }
 
       axios.defaults.headers.common[
         "Authorization"
-      ] = `${loginResponse.data.token}`;
+      ] = `Bearer ${loginResponse.data.token}`;
+      axios.defaults.withCredentials = true;
 
-      const loggedUserId = jwtDecode(loginResponse.data.token).id;
+      const loggedUserId = jwtDecode<{ id: string }>(
+        loginResponse.data.token
+      ).id;
 
       const loggedUser = await userApi.getUser(loggedUserId);
 
@@ -75,27 +86,33 @@ export const AuthProvider = ({ children }: any) => {
         user: loggedUser,
       });
 
-      await SecureStore.setItemAsync(TOKEN_KEY, loginResponse.data.token);
+      await SecureStore.setItemAsync("TOKEN_KEY", loginResponse.data.token);
     } catch (error) {
       console.log("Login error:", error?.response);
     }
   };
 
-  const register = async (userData: object) => {
+  const register = async (userData: object): Promise<User> => {
+    let newUser = null;
     try {
       const registerResponse = await axios.post(
         `${API_BASE_URL}/auth/register`,
-        userData
+        userData,
+        { withCredentials: true }
       );
 
-      console.log(registerResponse);
+      newUser = registerResponse.data;
     } catch (error) {
       console.error("Register error:", error);
     }
+
+    return newUser;
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync("TOKEN_KEY");
+
+    axios.defaults.headers.common["Authorization"] = null;
 
     setAuthState({
       token: null,

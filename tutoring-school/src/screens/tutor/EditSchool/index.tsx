@@ -29,10 +29,10 @@ const EditSchool = ({ navigation }: any) => {
 
   const handleEditSchoolClick = async () => {
     try {
-      const { tutorId } = selectedSchool;
+      const { userId: tutorId } = selectedSchool;
 
       await schoolApi.updateSchool(selectedSchool.id!, {
-        tutorId,
+        userId: tutorId,
         name,
         description,
         phone,

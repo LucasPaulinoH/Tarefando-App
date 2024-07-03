@@ -1,6 +1,6 @@
 export interface School {
   id?: string;
-  tutorId: string;
+  userId: string;
   name: string;
   description: string;
   phone: string;

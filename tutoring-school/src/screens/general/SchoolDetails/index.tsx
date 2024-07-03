@@ -1,14 +1,7 @@
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { School } from "../../../services/School/type";
 import * as SecureStore from "expo-secure-store";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  Icon,
-  Input,
-  Text,
-} from "@ui-kitten/components";
+import { Button, Card, Icon, Input, Text } from "@ui-kitten/components";
 import styles from "./styles";
 import QRCode from "react-native-qrcode-svg";
 import { useEffect, useState } from "react";
@@ -16,11 +9,15 @@ import schoolApi from "../../../services/School";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
 import { SearchIcon, UnlinkSchoolIcon } from "../../../theme/Icons";
+import { useAuth } from "../../../context/AuthContext";
+import { UserRole } from "../../../types/Types";
 
 const TutorSchoolDetails = ({ navigation }: any) => {
   const selectedSchoolId: string = JSON.parse(
     SecureStore.getItem("selectedSchoolId")!
   );
+
+  const { authState } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -56,12 +53,21 @@ const TutorSchoolDetails = ({ navigation }: any) => {
     }
   };
 
+  const handleStudentDetailsClick = (studentId: string) => {
+    SecureStore.setItem("selectedStudentId", JSON.stringify(studentId));
+    navigation.navigate("StudentDetails");
+  };
+
   useEffect(() => {
     fetchSchool();
   }, []);
 
+  const isUserTutor = () => {
+    return authState?.user?.role === UserRole.TUTOR;
+  };
+
   useEffect(() => {
-    fetchStudents();
+    if (isUserTutor()) fetchStudents();
   }, [school]);
 
   const filteredStudents = students.filter((student) =>
@@ -70,6 +76,7 @@ const TutorSchoolDetails = ({ navigation }: any) => {
 
   return (
     <View>
+      <Image source={{ uri: school.profileImage }} width={400} height={300} />
       <Text category="h5">{school.name}</Text>
       <Text category="s1" style={{ textAlign: "justify" }}>
         {school.description}
@@ -89,9 +96,9 @@ const TutorSchoolDetails = ({ navigation }: any) => {
           style={{ textAlign: "justify" }}
         >{`${school.address}, ${school.addressNumber} - ${school.district}, ${school.city} - ${school.state}`}</Text>
       </View>
-      <QRCode value={school.id} />
 
-      {students.length > 0 ? (
+      {isUserTutor() ? <QRCode value={school.id} /> : null}
+      {students.length > 0 && isUserTutor() ? (
         <>
           <Text category="h6">Alunos desta escola</Text>
           <Input
@@ -100,28 +107,33 @@ const TutorSchoolDetails = ({ navigation }: any) => {
             value={searchTerm}
             onChangeText={(search) => setSearchTerm(search)}
           />
-        </>
-      ) : null}
-      {filteredStudents.map((student: Student) => (
-        <Card key={student.id}>
-          <View style={styles.studentCard}>
-            <View style={styles.studentCardFirstHalf}>
-              <View style={styles.studentNameAndLinked}>
-                <Text category="h6">{student.name}</Text>
-              </View>
-              <View style={styles.pendentTasksIconAndLabel}></View>
-            </View>
+          {filteredStudents.map((student: Student) => (
+            <Card
+              key={student.id}
+              onPress={() => handleStudentDetailsClick(student.id!)}
+            >
+              <View style={styles.studentCard}>
+                <View style={styles.studentCardFirstHalf}>
+                  <View style={styles.studentNameAndLinked}>
+                    <Text category="h6">{student.name}</Text>
+                  </View>
+                  <View style={styles.pendentTasksIconAndLabel}></View>
+                </View>
 
-            <View>
-              <Button
-                accessoryLeft={UnlinkSchoolIcon}
-                onPress={() => handleUnlinkFromSchool(student.id!)}
-                appearance="ghost"
-              />
-            </View>
-          </View>
-        </Card>
-      ))}
+                <View>
+                  <Button
+                    accessoryLeft={UnlinkSchoolIcon}
+                    onPress={() => handleUnlinkFromSchool(student.id!)}
+                    appearance="ghost"
+                  />
+                </View>
+              </View>
+            </Card>
+          ))}
+        </>
+      ) : students.length === 0 && isUserTutor() ? (
+        <Text>Não há alunos vinculados a esta escola ainda.</Text>
+      ) : null}
     </View>
   );
 };

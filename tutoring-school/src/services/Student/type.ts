@@ -2,7 +2,7 @@ import { Task } from "../Task/type";
 
 export interface Student {
   id?: string;
-  userId: string;
+  user?: string;
   schoolId?: string;
   name: string;
   birthdate: Date;

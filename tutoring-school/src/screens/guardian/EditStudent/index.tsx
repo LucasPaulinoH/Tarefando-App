@@ -62,9 +62,9 @@ const EditStudent = ({ navigation }: any) => {
         selectedDayLabel
       );
 
-      const { userId: guardianId } = selectedStudent;
+      const { user: guardianId } = selectedStudent;
       await studentApi.updateStudent(selectedStudent.id!, {
-        userId: guardianId,
+        user: guardianId,
         name,
         birthdate,
         grade,

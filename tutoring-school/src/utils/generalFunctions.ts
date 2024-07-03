@@ -47,3 +47,26 @@ export const calculateAge = (birthdate: Date): number => {
 
   return ageInYears;
 };
+
+export const countPendentTasksInTaskArray = (tasks: Task[]): number => {
+  let pendentTaskCounter = 0;
+
+  let iterableTask = null;
+  for (let i = 0; i < tasks.length; i++) {
+    iterableTask = tasks[i];
+
+    if (!iterableTask.concluded) pendentTaskCounter++;
+  }
+
+  return pendentTaskCounter;
+};
+
+export const showStudentPendentTasksString = (
+  pendentTaskQuantity: number
+): string => {
+  return pendentTaskQuantity === 0
+    ? `Nenhuma atividade pendente`
+    : pendentTaskQuantity === 1
+    ? `1 atividade pendente`
+    : `${pendentTaskQuantity} atividades pendentes`;
+};

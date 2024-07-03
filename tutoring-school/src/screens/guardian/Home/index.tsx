@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import { Button, Card, Input, Text, ButtonGroup } from "@ui-kitten/components";
+import { Button, Input, ButtonGroup } from "@ui-kitten/components";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
-import styles from "./styles";
 import {
   AddIcon,
   DeleteIcon,
   EditIcon,
-  PendentTaskIcon,
   SearchIcon,
 } from "../../../theme/Icons";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
-import { Task } from "../../../services/Task/type";
+import StudentListItem from "../../../components/StudentListItem";
 
 const GuardianHome = ({ navigation }: any) => {
   const { authState, onLogout } = useAuth();
@@ -62,29 +60,6 @@ const GuardianHome = ({ navigation }: any) => {
     }
   };
 
-  const countPendentTasksInTaskArray = (tasks: Task[]): number => {
-    let pendentTaskCounter = 0;
-
-    let iterableTask = null;
-    for (let i = 0; i < tasks.length; i++) {
-      iterableTask = tasks[i];
-
-      if (!iterableTask.concluded) pendentTaskCounter++;
-    }
-
-    return pendentTaskCounter;
-  };
-
-  const showStudentPendentTasksString = (
-    pendentTaskQuantity: number
-  ): string => {
-    return pendentTaskQuantity === 0
-      ? `Nenhuma atividade pendente`
-      : pendentTaskQuantity === 1
-      ? `1 atividade pendente`
-      : `${pendentTaskQuantity} atividades pendentes`;
-  };
-
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -108,58 +83,27 @@ const GuardianHome = ({ navigation }: any) => {
         />
       ) : null}
       {filteredStudents.map((student: Student) => (
-        <Card
-          key={student.id}
+        <StudentListItem
+          student={student}
           onPress={() => handleStudentDetailsClick(student.id!)}
-        >
-          <View style={styles.studentCard}>
-            <View style={styles.studentCardFirstHalf}>
-              <View style={styles.studentNameAndLinked}>
-                <Text category="h6">{student.name}</Text>
-              </View>
-              <View style={styles.pendentTasksIconAndLabel}>
-                {(() => {
-                  const pendentTasksQuantity = countPendentTasksInTaskArray(
-                    student.tasks!
-                  );
-                  return !student.schoolId ? (
-                    <>
-                      <Text>Sem vínculo escolar</Text>
-                    </>
-                  ) : pendentTasksQuantity > 0 ? (
-                    <>
-                      <PendentTaskIcon style={{ width: 20, height: 20 }} />
-                      <Text>
-                        {showStudentPendentTasksString(pendentTasksQuantity)}
-                      </Text>
-                    </>
-                  ) : (
-                    <Text>
-                      {showStudentPendentTasksString(pendentTasksQuantity)}
-                    </Text>
-                  );
-                })()}
-              </View>
-            </View>
-
-            <View>
-              <ButtonGroup appearance="ghost">
-                <Button
-                  accessoryLeft={EditIcon}
-                  onPress={() => {
-                    handleEditStudentClick(student);
-                  }}
-                />
-                <Button
-                  accessoryLeft={DeleteIcon}
-                  onPress={() => {
-                    handleDeleteStudentClick(student.id!);
-                  }}
-                />
-              </ButtonGroup>
-            </View>
-          </View>
-        </Card>
+          actions={
+            <ButtonGroup appearance="ghost">
+              <Button
+                accessoryLeft={EditIcon}
+                onPress={() => {
+                  handleEditStudentClick(student);
+                }}
+              />
+              <Button
+                accessoryLeft={DeleteIcon}
+                onPress={() => {
+                  handleDeleteStudentClick(student.id!);
+                }}
+              />
+            </ButtonGroup>
+          }
+          key={student.id}
+        />
       ))}
     </View>
   );

@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { View } from "react-native";
 import styles from "./styles";
-import { Button, Card, Input, Text } from "@ui-kitten/components";
+import { Avatar, Button, Input, Text } from "@ui-kitten/components";
 import RoleSelectCard from "../../../components/RoleSelectCard";
 import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
+import { firebase } from "../../../utils/firebase";
+import userApi from "../../../services/User";
+import { selectSingleImage } from "../../../utils/imageFunctions";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
 
   const [currentStep, setCurrentStep] = useState(0);
 
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,8 +30,19 @@ const Register = ({ navigation }: any) => {
     try {
       const newUserData = { name, email, phone, role, password };
 
-      const registrationResult = await auth.onRegister!(newUserData);
-      console.log("Registration result: ", registrationResult);
+      const createdUser = await auth.onRegister!(newUserData);
+
+      if (createdUser && profileImage !== null) {
+        const newUserProfileImageUrl = await uploadImage(
+          profileImage,
+          `users/${createdUser.id}`
+        );
+
+        await userApi.updateUserProfileImage(
+          createdUser.id,
+          newUserProfileImageUrl!
+        );
+      }
 
       navigation.navigate("Login");
     } catch (error) {
@@ -34,10 +50,80 @@ const Register = ({ navigation }: any) => {
     }
   };
 
+  const handleSelectImageClick = async () => {
+    const selectedImage = await selectSingleImage();
+    if (selectedImage !== null) setProfileImage(selectedImage);
+  };
+
+  const uploadImage = async (
+    imageUrl: string,
+    refPath: string
+  ): Promise<string> => {
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response as Blob);
+      };
+      xhr.onerror = function () {
+        reject(new TypeError("Network request failed"));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", imageUrl, true);
+      xhr.send(null);
+    });
+
+    const ref = firebase.storage().ref().child(refPath);
+
+    return new Promise<string>((resolve, reject) => {
+      const snapshot = ref.put(blob);
+
+      snapshot.on(
+        firebase.storage.TaskEvent.STATE_CHANGED,
+        () => {
+          setIsImageUploading(true);
+        },
+        (error) => {
+          setIsImageUploading(false);
+          console.log(error);
+          blob.close();
+          reject(error);
+        },
+        () => {
+          snapshot.snapshot.ref
+            .getDownloadURL()
+            .then((url) => {
+              setIsImageUploading(false);
+              blob.close();
+              resolve(url);
+            })
+            .catch((error) => {
+              setIsImageUploading(false);
+              console.log(error);
+              blob.close();
+              reject(error);
+            });
+        }
+      );
+    });
+  };
+
   const renderFirstStep = (
     <View style={styles.innerContainer}>
       <Text category="h3">Tia Lady Ajuda</Text>
       <Text category="h5">1. Preencha os dados de usuário</Text>
+      <Avatar
+        style={{ width: 150, height: 150 }}
+        size="giant"
+        source={{ uri: profileImage! }}
+      />
+      <View>
+        <Button onPress={handleSelectImageClick}>
+          <Text>Adicionar foto de perfil</Text>
+        </Button>
+        <Button onPress={() => setProfileImage(null)} appearance="outline">
+          <Text>Limpar</Text>
+        </Button>
+      </View>
       <Input
         placeholder="Nome de usuário *"
         value={name}
@@ -59,9 +145,7 @@ const Register = ({ navigation }: any) => {
         onChangeText={(password) => setPassword(password)}
         secureTextEntry
       />
-      <Button onPress={() => setCurrentStep(1)} style={styles.button}>
-        Confirmar
-      </Button>
+      <Button onPress={() => setCurrentStep(1)}>Confirmar</Button>
     </View>
   );
 

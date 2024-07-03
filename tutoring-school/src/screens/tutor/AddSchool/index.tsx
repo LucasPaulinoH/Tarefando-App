@@ -28,10 +28,10 @@ const AddSchool = ({ navigation }: any) => {
 
   const handleAddSchoolClick = async () => {
     try {
-      const tutorId = authState?.user!.id!;
+      const userId = authState?.user!.id!;
 
-      await schoolApi.createSchool({
-        tutorId,
+      const newSchool: School = {
+        userId,
         name,
         description,
         phone,
@@ -42,7 +42,9 @@ const AddSchool = ({ navigation }: any) => {
         district,
         city,
         state,
-      } as School);
+      };
+
+      await schoolApi.createSchool(newSchool);
       navigation.navigate("TutorHome");
     } catch (error) {
       console.error("Error creating school: ", error);

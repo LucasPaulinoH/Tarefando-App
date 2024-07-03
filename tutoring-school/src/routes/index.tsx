@@ -4,17 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import Login from "../screens/general/Login";
 import Register from "../screens/general/Register";
 import AddStudent from "../screens/guardian/AddStudent";
-import AddTask from "../screens/guardian/AddTask";
+import AddTask from "../screens/general/AddTask";
 import EditStudent from "../screens/guardian/EditStudent";
 import EditTask from "../screens/guardian/EditTask";
 import GuardianHome from "../screens/guardian/Home";
-import GuardianSchoolDetails from "../screens/guardian/SchoolDetails";
-import StudentDetails from "../screens/guardian/StudentDetails";
-import TaskDetails from "../screens/guardian/TaskDetails";
+import StudentDetails from "../screens/general/StudentDetails";
+import TaskDetails from "../screens/general/TaskDetails";
 import AddSchool from "../screens/tutor/AddSchool";
 import EditSchool from "../screens/tutor/EditSchool";
 import TutorHome from "../screens/tutor/Home";
-import TutorSchoolDetails from "../screens/tutor/SchoolDetails";
+import SchoolDetails from "../screens/general/SchoolDetails";
 import { UserRole } from "../types/Types";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import GuardianAnnouncements from "../screens/guardian/Announcements";
@@ -51,7 +50,7 @@ const Routes = () => {
         <Stack.Screen name="TaskDetails" component={TaskDetails} />
         <Stack.Screen name="AddTask" component={AddTask} />
         <Stack.Screen name="EditTask" component={EditTask} />
-        <Stack.Screen name="SchoolDetails" component={GuardianSchoolDetails} />
+        <Stack.Screen name="SchoolDetails" component={SchoolDetails} />
       </Stack.Navigator>
     );
   };
@@ -70,7 +69,9 @@ const Routes = () => {
         <Stack.Screen name="TutorHome" component={TutorHome} />
         <Stack.Screen name="AddSchool" component={AddSchool} />
         <Stack.Screen name="EditSchool" component={EditSchool} />
-        <Stack.Screen name="SchoolDetails" component={TutorSchoolDetails} />
+        <Stack.Screen name="AddTask" component={AddTask} />
+        <Stack.Screen name="SchoolDetails" component={SchoolDetails} />
+        <Stack.Screen name="StudentDetails" component={StudentDetails} />
       </Stack.Navigator>
     );
   };
@@ -79,6 +80,8 @@ const Routes = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
         <Stack.Screen name="Students" component={TutorStudents} />
+        <Stack.Screen name="StudentDetails" component={StudentDetails} />
+        <Stack.Screen name="TaskDetails" component={TaskDetails} />
       </Stack.Navigator>
     );
   };

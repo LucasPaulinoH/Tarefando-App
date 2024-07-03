@@ -60,7 +60,14 @@ export const PersonIcon = (props: any): IconElement => (
   <Icon {...props} name="person-outline" />
 );
 
+export const EmailIcon = (props: any): IconElement => (
+  <Icon {...props} name="email-outline" />
+);
+
 export const SchoolIcon = (props: any): IconElement => (
   <Icon {...props} name="home-outline" />
 );
 
+export const PhoneIcon = (props: any): IconElement => (
+  <Icon {...props} name="phone-outline" />
+);
