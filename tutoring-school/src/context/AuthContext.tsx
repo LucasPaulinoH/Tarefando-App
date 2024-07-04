@@ -32,24 +32,18 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const loadToken = async () => {
-      try {
-        const token: string | null = await SecureStore.getItemAsync(
-          "TOKEN_KEY"
-        );
+      const token = await SecureStore.getItemAsync("TOKEN_KEY");
+      axios.defaults.headers.Authorization = null;
 
-        if (token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-          axios.defaults.withCredentials = true;
+      if (token) {
+        axios.defaults.headers.Authorization = token;
 
-          const loggedUserId = jwtDecode<{ id: string }>(token).id;
+        const loggedUserId = jwtDecode<{ id: string }>(token).id;
 
-          const loggedUser: User = await userApi.getUser(loggedUserId);
-          setAuthState({ token, authenticated: true, user: loggedUser });
-        } else {
-          setAuthState({ token: null, authenticated: false, user: null });
-        }
-      } catch (error) {
-        console.log("Load token error:", error?.response);
+        const loggedUser: User = await userApi.getUser(loggedUserId);
+        setAuthState({ token, authenticated: true, user: loggedUser });
+      } else {
+        setAuthState({ token: null, authenticated: false, user: null });
       }
     };
 
@@ -58,21 +52,12 @@ export const AuthProvider = ({ children }: any) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const loginResponse = await axios.post(
-        `${API_BASE_URL}/auth/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+      const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email,
+        password,
+      });
 
-      const csrfToken = loginResponse.headers["x-xsrf-token"];
-      if (csrfToken) {
-        axios.defaults.headers.common["X-XSRF-TOKEN"] = csrfToken;
-      }
-
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${loginResponse.data.token}`;
-      axios.defaults.withCredentials = true;
+      axios.defaults.headers.Authorization = loginResponse.data.token;
 
       const loggedUserId = jwtDecode<{ id: string }>(
         loginResponse.data.token
@@ -87,8 +72,8 @@ export const AuthProvider = ({ children }: any) => {
       });
 
       await SecureStore.setItemAsync("TOKEN_KEY", loginResponse.data.token);
-    } catch (error) {
-      console.log("Login error:", error?.response);
+    } catch (error: any) {
+      console.log("Error during login: ", error.response);
     }
   };
 
@@ -97,13 +82,12 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const registerResponse = await axios.post(
         `${API_BASE_URL}/auth/register`,
-        userData,
-        { withCredentials: true }
+        userData
       );
 
       newUser = registerResponse.data;
-    } catch (error) {
-      console.error("Register error:", error);
+    } catch (error: any) {
+      console.error("Register error:", error.response);
     }
 
     return newUser;
@@ -111,8 +95,7 @@ export const AuthProvider = ({ children }: any) => {
 
   const logout = async () => {
     await SecureStore.deleteItemAsync("TOKEN_KEY");
-
-    axios.defaults.headers.common["Authorization"] = null;
+    axios.defaults.headers.Authorization = null;
 
     setAuthState({
       token: null,

@@ -5,9 +5,11 @@ import { Avatar, Button, Input, Text } from "@ui-kitten/components";
 import RoleSelectCard from "../../../components/RoleSelectCard";
 import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
-import { firebase } from "../../../utils/firebase";
 import userApi from "../../../services/User";
-import { selectSingleImage } from "../../../utils/imageFunctions";
+import {
+  handleSetSingleSelectImageState,
+  uploadImage,
+} from "../../../utils/imageFunctions";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
@@ -15,7 +17,6 @@ const Register = ({ navigation }: any) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [isImageUploading, setIsImageUploading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -50,63 +51,6 @@ const Register = ({ navigation }: any) => {
     }
   };
 
-  const handleSelectImageClick = async () => {
-    const selectedImage = await selectSingleImage();
-    if (selectedImage !== null) setProfileImage(selectedImage);
-  };
-
-  const uploadImage = async (
-    imageUrl: string,
-    refPath: string
-  ): Promise<string> => {
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function () {
-        resolve(xhr.response as Blob);
-      };
-      xhr.onerror = function () {
-        reject(new TypeError("Network request failed"));
-      };
-      xhr.responseType = "blob";
-      xhr.open("GET", imageUrl, true);
-      xhr.send(null);
-    });
-
-    const ref = firebase.storage().ref().child(refPath);
-
-    return new Promise<string>((resolve, reject) => {
-      const snapshot = ref.put(blob);
-
-      snapshot.on(
-        firebase.storage.TaskEvent.STATE_CHANGED,
-        () => {
-          setIsImageUploading(true);
-        },
-        (error) => {
-          setIsImageUploading(false);
-          console.log(error);
-          blob.close();
-          reject(error);
-        },
-        () => {
-          snapshot.snapshot.ref
-            .getDownloadURL()
-            .then((url) => {
-              setIsImageUploading(false);
-              blob.close();
-              resolve(url);
-            })
-            .catch((error) => {
-              setIsImageUploading(false);
-              console.log(error);
-              blob.close();
-              reject(error);
-            });
-        }
-      );
-    });
-  };
-
   const renderFirstStep = (
     <View style={styles.innerContainer}>
       <Text category="h3">Tia Lady Ajuda</Text>
@@ -117,7 +61,9 @@ const Register = ({ navigation }: any) => {
         source={{ uri: profileImage! }}
       />
       <View>
-        <Button onPress={handleSelectImageClick}>
+        <Button
+          onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+        >
           <Text>Adicionar foto de perfil</Text>
         </Button>
         <Button onPress={() => setProfileImage(null)} appearance="outline">

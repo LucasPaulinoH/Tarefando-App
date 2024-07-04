@@ -1,5 +1,12 @@
 import { View } from "react-native";
-import { Text, Input, Button, IconElement, Icon } from "@ui-kitten/components";
+import {
+  Text,
+  Input,
+  Button,
+  IconElement,
+  Icon,
+  Avatar,
+} from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
 import MaskInput from "react-native-mask-input";
 import { useEffect, useState } from "react";
@@ -8,10 +15,15 @@ import schoolApi from "../../../services/School";
 import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
 import { School } from "../../../services/School/type";
 import { AddIcon } from "../../../theme/Icons";
+import {
+  handleSetSingleSelectImageState,
+  uploadImage,
+} from "../../../utils/imageFunctions";
 
 const AddSchool = ({ navigation }: any) => {
   const { authState } = useAuth();
 
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
@@ -44,7 +56,20 @@ const AddSchool = ({ navigation }: any) => {
         state,
       };
 
-      await schoolApi.createSchool(newSchool);
+      const createdSchool = await schoolApi.createSchool(newSchool);
+
+      if (createdSchool && profileImage !== null) {
+        const newSchoolProfileImageUrl = await uploadImage(
+          profileImage,
+          `schools/${createdSchool.id}`
+        );
+
+        await schoolApi.updateSchoolProfileImage(
+          createdSchool.id!,
+          newSchoolProfileImageUrl!
+        );
+      }
+
       navigation.navigate("TutorHome");
     } catch (error) {
       console.error("Error creating school: ", error);
@@ -67,6 +92,21 @@ const AddSchool = ({ navigation }: any) => {
   return (
     <View>
       <Text category="h6">Nova escola</Text>
+      <Avatar
+        style={{ width: 150, height: 150 }}
+        size="giant"
+        source={{ uri: profileImage! }}
+      />
+      <View>
+        <Button
+          onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+        >
+          <Text>Adicionar foto da escola</Text>
+        </Button>
+        <Button onPress={() => setProfileImage(null)} appearance="outline">
+          <Text>Limpar</Text>
+        </Button>
+      </View>
       <Input
         placeholder="Nome da escola *"
         value={name}

@@ -19,6 +19,10 @@ const schoolApi = {
     axios
       .put(`${CONTROLLER_URL}/${schoolId}`, updatedSchool)
       .then((response) => response.data),
+  updateSchoolProfileImage: (id: string, url: string) =>
+    axios
+      .patch(`${CONTROLLER_URL}/profile-image`, { id, url })
+      .then((response) => response.data),
   deleteSchool: (schoolId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${schoolId}`)

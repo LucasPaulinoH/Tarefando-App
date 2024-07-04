@@ -11,9 +11,13 @@ const userApi = {
     axios
       .get(`${CONTROLLER_URL}/user-card/${id}`)
       .then((response) => response.data),
-  updateUserProfileImage: (userId: string, url: string) =>
+  updateUser: (userId: string, updatedUser: Object): Promise<User> =>
     axios
-      .patch(`${CONTROLLER_URL}/profile-image`, { userId, url })
+      .put(`${CONTROLLER_URL}/${userId}`, updatedUser)
+      .then((response) => response.data),
+  updateUserProfileImage: (id: string, url: string) =>
+    axios
+      .patch(`${CONTROLLER_URL}/profile-image`, { id, url })
       .then((response) => response.data),
 };
 
