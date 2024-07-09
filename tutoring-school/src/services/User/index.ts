@@ -19,6 +19,8 @@ const userApi = {
     axios
       .patch(`${CONTROLLER_URL}/profile-image`, { id, url })
       .then((response) => response.data),
+  deleteUser: (id: string): Promise<void> =>
+    axios.delete(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
 };
 
 export default userApi;

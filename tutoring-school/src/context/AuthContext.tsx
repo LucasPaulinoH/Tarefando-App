@@ -2,7 +2,6 @@ import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { User } from "../services/User/type";
-import { API_BASE_URL } from "../services/api";
 import userApi from "../services/User";
 import { jwtDecode } from "jwt-decode";
 import authApi from "../services/Auth";
@@ -32,25 +31,26 @@ export const AuthProvider = ({ children }: any) => {
   }>({ token: null, authenticated: null, user: null });
 
   useEffect(() => {
-    const loadToken = async () => {
-      const recoveredToken = await SecureStore.getItemAsync("TOKEN_KEY");
-      axios.defaults.headers.Authorization = null;
+    // SecureStore.getItemAsync("TOKEN_KEY").then((recoveredToken) => {
+    //   axios.defaults.headers.Authorization = null;
 
-      if (recoveredToken) {
-        axios.defaults.headers.Authorization = recoveredToken;
-        const loggedUserId = jwtDecode<{ id: string }>(recoveredToken).id;
-        const loggedUser = await userApi.getUser(loggedUserId);
+    //   if (recoveredToken) {
+    //     axios.defaults.headers.Authorization = recoveredToken;
+    //     const loggedUserId = jwtDecode(recoveredToken).id;
 
-        setAuthState({
-          token: recoveredToken,
-          authenticated: true,
-          user: loggedUser,
-        });
-      } else {
-        setAuthState({ token: null, authenticated: false, user: null });
-      }
-    };
-    loadToken();
+    //     userApi.getUser(loggedUserId).then((loggedUser) => {
+    //       setAuthState({
+    //         token: recoveredToken,
+    //         authenticated: true,
+    //         user: loggedUser,
+    //       });
+    //     });
+    //   }
+
+    //   if (!recoveredToken) {
+    //     setAuthState({ token: null, authenticated: false, user: null });
+    //   }
+    // });
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: any) => {
 
       axios.defaults.headers.Authorization = receivedToken;
 
-      const loggedUserId = jwtDecode<{ id: string }>(receivedToken).id;
+      const loggedUserId = jwtDecode(receivedToken).id;
       const loggedUser = await userApi.getUser(loggedUserId);
 
       setAuthState({

@@ -19,12 +19,12 @@ import {
   AddIcon,
   DeleteIcon,
   EditIcon,
-  LogoutIcon,
   SearchIcon,
 } from "../../../theme/Icons";
+import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 
 const TutorHome = ({ navigation }: any) => {
-  const { authState, onLogout } = useAuth();
+  const { authState } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
@@ -64,8 +64,16 @@ const TutorHome = ({ navigation }: any) => {
     navigation.navigate("EditSchool");
   };
 
-  const handleDeleteSchoolClick = async (schoolId: string) => {
+  const handleDeleteSchoolClick = async (
+    schoolId: string,
+    profileImage: string
+  ) => {
     try {
+      if (profileImage) {
+        await deleteImageFromFirebase(profileImage);
+        console.log(`${profileImage} successfully deleted from firebase`);
+      }
+
       await schoolApi.deleteSchool(schoolId);
       fetchOwnedSchools(authState?.user?.id);
     } catch (error) {
@@ -117,7 +125,9 @@ const TutorHome = ({ navigation }: any) => {
                 />
                 <Button
                   accessoryLeft={DeleteIcon}
-                  onPress={() => handleDeleteSchoolClick(school.id!)}
+                  onPress={() =>
+                    handleDeleteSchoolClick(school.id!, school.profileImage!)
+                  }
                 />
               </ButtonGroup>
             </View>

@@ -16,16 +16,24 @@ import {
   Input,
   Text,
 } from "@ui-kitten/components";
-import { View } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import studentApi from "../../../services/Student";
 import subjectApi from "../../../services/Subject";
-import { EditIcon } from "../../../theme/Icons";
+import { CloseIcon, EditIcon } from "../../../theme/Icons";
 import * as SecureStore from "expo-secure-store";
 import { Subject } from "../../../services/Subject/type";
 import { Task } from "../../../services/Task/type";
 import { CURRENT_DATE } from "../../../constants/date";
 import { getSubjectsFromATaskArray } from "../../../utils/generalFunctions";
 import taskApi from "../../../services/Task";
+import {
+  deleteImageFromFirebase,
+  handleSetMultipleSelectedImageState,
+  selectMultipleImages,
+  uploadImageToFirebase,
+} from "../../../utils/imageFunctions";
+
+const GALLERY_IMAGE_SIZE = 160;
 
 const EditTask = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
@@ -40,6 +48,7 @@ const EditTask = ({ navigation }: any) => {
   const [description, setDescription] = useState(selectedTask.description);
 
   const [subject, setSubject] = useState("");
+  const [images, setImages] = useState<string[] | null>(selectedTask.images);
 
   const YEAR_LIST = fillYearList(false, true);
 
@@ -106,14 +115,38 @@ const EditTask = ({ navigation }: any) => {
         selectedDayLabel
       );
 
-      await taskApi.updateTask(selectedTask.id!, {
+      const updatedTaskResponse = await taskApi.updateTask(selectedTask.id!, {
         subjectId,
         title,
         description,
         deadlineDate,
-        images: [],
         studentId: selectedStudentId,
       } as Task);
+
+      if (images !== selectedTask.images && images?.length! > 0) {
+        let iterableImage = null;
+        for (let i = 0; i < selectedTask.images.length; i++) {
+          iterableImage = selectedTask.images[i];
+
+          await deleteImageFromFirebase(iterableImage);
+        }
+
+        const uploadedImageUrls: string[] = [];
+        let iterableUploadedImageUrl = "";
+
+        for (let i = 0; i < images?.length!; i++) {
+          iterableImage = images![i];
+
+          iterableUploadedImageUrl = await uploadImageToFirebase(
+            iterableImage,
+            `tasks/${updatedTaskResponse.id}/${i + 1}`
+          );
+
+          uploadedImageUrls.push(iterableUploadedImageUrl);
+        }
+
+        await taskApi.updateTaskImages(updatedTaskResponse.id!, uploadedImageUrls);
+      }
 
       navigation.navigate("StudentDetails");
     } catch (error) {
@@ -152,7 +185,7 @@ const EditTask = ({ navigation }: any) => {
   }, []);
 
   return (
-    <View>
+    <ScrollView>
       <Text category="h6">Edição de tarefa</Text>
       <Text category="s1">{studentName}</Text>
       <Input
@@ -178,6 +211,31 @@ const EditTask = ({ navigation }: any) => {
           <AutocompleteItem key={index} title={subject.name} />
         ))}
       </Autocomplete>
+      <Button onPress={() => handleSetMultipleSelectedImageState(setImages)}>
+        <Text>Adicione imagens</Text>
+      </Button>
+      <Text>{` ${
+        images?.length! > 0 ? `Imagens selecionadas (${images?.length}):` : ""
+      }`}</Text>
+      <View>
+        {images?.length! > 0 &&
+          images?.map((imageUrl: string, index: number) => (
+            <View key={index}>
+              <CloseIcon
+                style={{
+                  width: 25,
+                  height: 25,
+                }}
+                onPress={() => setImages(images.filter((_, i) => i !== index))}
+              />
+              <Image
+                source={{ uri: imageUrl }}
+                width={GALLERY_IMAGE_SIZE}
+                height={GALLERY_IMAGE_SIZE}
+              />
+            </View>
+          ))}
+      </View>
       <View>
         <DayPicker
           selectedLabel={selectedDayLabel}
@@ -203,7 +261,7 @@ const EditTask = ({ navigation }: any) => {
       <Button accessoryLeft={EditIcon} onPress={handleEditTask}>
         Confirmar edição
       </Button>
-    </View>
+    </ScrollView>
   );
 };
 

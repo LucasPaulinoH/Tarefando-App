@@ -1,6 +1,7 @@
 import { MediaTypeOptions, launchImageLibraryAsync } from "expo-image-picker";
 import { firebase } from "../utils/firebase";
 import { Dispatch, SetStateAction } from "react";
+import { getStorage, ref, deleteObject } from "firebase/storage";
 
 export const selectSingleImage = async (): Promise<string | null> => {
   let result = await launchImageLibraryAsync({
@@ -14,14 +15,44 @@ export const selectSingleImage = async (): Promise<string | null> => {
   else return null;
 };
 
-export const handleSetSingleSelectImageState = async (
+export const selectMultipleImages = async (): Promise<string[] | null> => {
+  let result = await launchImageLibraryAsync({
+    mediaTypes: MediaTypeOptions.Images,
+    quality: 1,
+    allowsMultipleSelection: true,
+  });
+
+  const imageUris = [];
+
+  if (!result.canceled) {
+    for (let i = 0; i < result.assets.length; i++) {
+      imageUris.push(result.assets[i].uri);
+    }
+
+    return imageUris;
+  } else return null;
+};
+
+export const handleSetSingleSelectedImageState = async (
   setImage: Dispatch<SetStateAction<string | null>>
 ) => {
   const selectedImage = await selectSingleImage();
   if (selectedImage !== null) setImage(selectedImage);
 };
 
-export const uploadImage = async (
+export const handleSetMultipleSelectedImageState = async (
+  setImages: Dispatch<SetStateAction<string[] | null>>
+) => {
+  const selectedImages = await selectMultipleImages();
+
+  if (selectedImages !== null)
+    setImages((previousImages) =>
+      previousImages === null
+        ? [...selectedImages]
+        : [...previousImages!, ...selectedImages]
+    );
+};
+export const uploadImageToFirebase = async (
   imageUrl: string,
   refPath: string
 ): Promise<string> => {
@@ -66,4 +97,14 @@ export const uploadImage = async (
       }
     );
   });
+};
+
+export const deleteImageFromFirebase = async (imageUrl: string) => {
+  try {
+    const storage = getStorage();
+    const imageRef = ref(storage, imageUrl);
+    deleteObject(imageRef);
+  } catch (error) {
+    console.log(`Error deleting ${imageUrl} from firebase: `, error);
+  }
 };

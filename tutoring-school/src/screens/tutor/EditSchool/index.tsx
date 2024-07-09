@@ -8,8 +8,8 @@ import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
 import schoolApi from "../../../services/School";
 import { EditIcon } from "../../../theme/Icons";
 import {
-  handleSetSingleSelectImageState,
-  uploadImage,
+  handleSetSingleSelectedImageState,
+  uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
 
 const EditSchool = ({ navigation }: any) => {
@@ -53,7 +53,7 @@ const EditSchool = ({ navigation }: any) => {
       } as School);
 
       if (selectedSchool.profileImage !== profileImage) {
-        const newUpdatedImageUrl = await uploadImage(
+        const newUpdatedImageUrl = await uploadImageToFirebase(
           profileImage!,
           `schools/${selectedSchool?.id}`
         );
@@ -88,7 +88,7 @@ const EditSchool = ({ navigation }: any) => {
           </Button>
         ) : null}
         <Button
-          onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+          onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
         >
           <Text>Alterar foto da escola</Text>
         </Button>

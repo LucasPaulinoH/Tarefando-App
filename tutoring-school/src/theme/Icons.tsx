@@ -32,6 +32,10 @@ export const CalendarIcon = (props: any): IconElement => (
   <Icon {...props} name="calendar-outline" />
 );
 
+export const CloseIcon = (props: any): IconElement => (
+  <Icon {...props} name="close-outline" />
+);
+
 export const LoginIcon = (props: any): IconElement => (
   <Icon {...props} name="log-in-outline" />
 );

@@ -6,7 +6,7 @@ import Register from "../screens/general/Register";
 import AddStudent from "../screens/guardian/AddStudent";
 import AddTask from "../screens/general/AddTask";
 import EditStudent from "../screens/guardian/EditStudent";
-import EditTask from "../screens/guardian/EditTask";
+import EditTask from "../screens/general/EditTask";
 import GuardianHome from "../screens/guardian/Home";
 import StudentDetails from "../screens/general/StudentDetails";
 import TaskDetails from "../screens/general/TaskDetails";
@@ -82,6 +82,7 @@ const Routes = () => {
         <Stack.Screen name="Students" component={TutorStudents} />
         <Stack.Screen name="StudentDetails" component={StudentDetails} />
         <Stack.Screen name="TaskDetails" component={TaskDetails} />
+        <Stack.Screen name="EditTask" component={EditTask} />
       </Stack.Navigator>
     );
   };

@@ -12,15 +12,18 @@ import {
 import GuardianIcon from "../../../../assets/svg/guardian-card-icon.svg";
 import TutorIcon from "../../../../assets/svg/tutor-card-icon.svg";
 import {
-  handleSetSingleSelectImageState,
-  uploadImage,
+  deleteImageFromFirebase,
+  handleSetSingleSelectedImageState,
+  uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
 import userApi from "../../../services/User";
 import { User } from "../../../services/User/type";
+import MaskInput from "react-native-mask-input";
+import { PHONE_MASK } from "../../../utils/masks";
 
 const ICON_SIZE = 24;
 
-const Me = () => {
+const Me = ({ navigation }: any) => {
   const { onLogout, authState } = useAuth();
 
   const [editModeEnabled, setEditModeEnabled] = useState(false);
@@ -47,7 +50,7 @@ const Me = () => {
         });
 
         if (user?.profileImage !== profileImage) {
-          const newUpdatedImageUrl = await uploadImage(
+          const newUpdatedImageUrl = await uploadImageToFirebase(
             profileImage!,
             `users/${user?.id}`
           );
@@ -81,6 +84,23 @@ const Me = () => {
     );
   };
 
+  const handleDeleteUserClick = async (
+    userId: string,
+    profileImage: string
+  ) => {
+    try {
+      if (profileImage) {
+        await deleteImageFromFirebase(profileImage);
+        console.log(`${profileImage} successfully deleted from firebase`);
+      }
+
+      await userApi.deleteUser(userId);
+      onLogout;
+    } catch (error) {
+      console.error("Error deleting school: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
@@ -102,7 +122,7 @@ const Me = () => {
         <>
           <View>
             <Button
-              onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+              onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
             >
               <Text>Alterar foto de perfil</Text>
             </Button>
@@ -147,11 +167,12 @@ const Me = () => {
             disabled
             accessoryLeft={EmailIcon}
           />
-          <Input
-            placeholder="Telefone *"
+          <MaskInput
+            mask={PHONE_MASK}
             value={phone}
             onChangeText={(phone) => setPhone(phone)}
-            accessoryLeft={PhoneIcon}
+            placeholder="Telefone (contato) *"
+            keyboardType="numeric"
           />
 
           <Button onPress={handleUserUpdateClick}>
@@ -183,6 +204,12 @@ const Me = () => {
         accessoryLeft={LogoutIcon}
       >
         <Text>Sair do app</Text>
+      </Button>
+      <Button
+        appearance="outline"
+        onPress={() => handleDeleteUserClick(user?.id!, user?.profileImage!)}
+      >
+        <Text>Excluir conta</Text>
       </Button>
     </View>
   );

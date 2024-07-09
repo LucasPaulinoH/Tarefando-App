@@ -1,4 +1,4 @@
-import { View, Image } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Button, Text } from "@ui-kitten/components";
 import { Task } from "../../../services/Task/type";
@@ -62,7 +62,7 @@ const TaskDetails = () => {
   }, [selectedTask]);
 
   return (
-    <View>
+    <ScrollView>
       <Text category="h5">{selectedTask.title}</Text>
       <Text category="s1" style={{ textAlign: "justify" }}>
         {subjectName}
@@ -105,7 +105,7 @@ const TaskDetails = () => {
           )}
         </Button>
       ) : null}
-    </View>
+    </ScrollView>
   );
 };
 

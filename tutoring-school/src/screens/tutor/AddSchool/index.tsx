@@ -16,8 +16,8 @@ import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
 import { School } from "../../../services/School/type";
 import { AddIcon } from "../../../theme/Icons";
 import {
-  handleSetSingleSelectImageState,
-  uploadImage,
+  handleSetSingleSelectedImageState,
+  uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
 
 const AddSchool = ({ navigation }: any) => {
@@ -59,7 +59,7 @@ const AddSchool = ({ navigation }: any) => {
       const createdSchool = await schoolApi.createSchool(newSchool);
 
       if (createdSchool && profileImage !== null) {
-        const newSchoolProfileImageUrl = await uploadImage(
+        const newSchoolProfileImageUrl = await uploadImageToFirebase(
           profileImage,
           `schools/${createdSchool.id}`
         );
@@ -99,7 +99,7 @@ const AddSchool = ({ navigation }: any) => {
       />
       <View>
         <Button
-          onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+          onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
         >
           <Text>Adicionar foto da escola</Text>
         </Button>

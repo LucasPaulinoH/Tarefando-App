@@ -7,8 +7,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
 import userApi from "../../../services/User";
 import {
-  handleSetSingleSelectImageState,
-  uploadImage,
+  handleSetSingleSelectedImageState,
+  uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
 
 const Register = ({ navigation }: any) => {
@@ -34,7 +34,7 @@ const Register = ({ navigation }: any) => {
       const createdUser = await auth.onRegister!(newUserData);
 
       if (createdUser && profileImage !== null) {
-        const newUserProfileImageUrl = await uploadImage(
+        const newUserProfileImageUrl = await uploadImageToFirebase(
           profileImage,
           `users/${createdUser.id}`
         );
@@ -62,7 +62,7 @@ const Register = ({ navigation }: any) => {
       />
       <View>
         <Button
-          onPress={() => handleSetSingleSelectImageState(setProfileImage)}
+          onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
         >
           <Text>Adicionar foto de perfil</Text>
         </Button>

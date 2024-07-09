@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Student } from "../../../services/Student/type";
 import {
@@ -36,7 +36,8 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
 import userApi from "../../../services/User";
-import { User, UserCard } from "../../../services/User/type";
+import { UserCard } from "../../../services/User/type";
+import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
@@ -105,15 +106,23 @@ const StudentDetails = ({ navigation }: any) => {
   };
 
   const handleEditTaskClick = (task: Task) => {
+    setMoreOptionsVisible(false);
     SecureStore.setItem("selectedTask", JSON.stringify(task));
     navigation.navigate("EditTask");
   };
 
   const handleDeleteTaskClick = async (taskId: string) => {
     try {
-      await taskApi.deleteTask(taskId);
-      fetchStudentDetails();
       setMoreOptionsVisible(false);
+      await taskApi.deleteTask(taskId);
+
+      if (selectedTask.images !== null) {
+        for (let i = 0; i < selectedTask.images.length; i++) {
+          await deleteImageFromFirebase(selectedTask.images[i]);
+        }
+      }
+
+      fetchStudentDetails();
     } catch (error) {
       console.log("Error deleting task: ", error);
     }
@@ -202,7 +211,7 @@ const StudentDetails = ({ navigation }: any) => {
   );
 
   return (
-    <View>
+    <ScrollView>
       <Text category="h5">{student!.name}</Text>
       <Text category="s1" style={{ textAlign: "justify" }}>
         {`${showStudentAgeString(
@@ -385,7 +394,7 @@ const StudentDetails = ({ navigation }: any) => {
           </Button>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
