@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
 import { Avatar, Button, Input, Text } from "@ui-kitten/components";
 import { useEffect, useState } from "react";
@@ -26,6 +26,7 @@ const ICON_SIZE = 24;
 const Me = ({ navigation }: any) => {
   const { onLogout, authState } = useAuth();
 
+  const [tabIndex, setTabIndex] = useState(0);
   const [editModeEnabled, setEditModeEnabled] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
@@ -36,6 +37,10 @@ const Me = ({ navigation }: any) => {
   const [email, setEmail] = useState(authState?.user?.email);
   const [phone, setPhone] = useState(authState?.user?.phone);
   const role = authState?.user?.role as UserRole;
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
 
   const handleUserUpdateClick = async () => {
     try {
@@ -101,117 +106,183 @@ const Me = ({ navigation }: any) => {
     }
   };
 
+  const handleUpdatePasswordClick = async () => {
+    try {
+      const validatePasswordDTO = {
+        id: authState?.user?.id!,
+        password: currentPassword,
+      };
+
+      const isPasswordUpdateAllowed = await userApi.validateCurrentPassword(
+        validatePasswordDTO
+      );
+
+      if (isPasswordUpdateAllowed && newPassword === newPasswordConfirm) {
+      }
+    } catch (error) {
+      console.error("Error updating user password: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <View>
-      <Text category="h6">Dados do perfil</Text>
-      {!editModeEnabled ? (
-        <Button onPress={() => setEditModeEnabled(!editModeEnabled)}>
-          <Text>Editar informações do perfil</Text>
+    <ScrollView>
+      <View style={{ display: "flex", flexDirection: "row", gap: 20 }}>
+        <Button onPress={() => setTabIndex(0)}>
+          <Text>Meu perfil</Text>
         </Button>
-      ) : null}
-      <Avatar
-        style={{ width: 150, height: 150 }}
-        size="giant"
-        source={{ uri: profileImage ?? "" }}
-      />
-      {editModeEnabled ? (
+        <Button onPress={() => setTabIndex(1)}>
+          <Text>Alterar senha</Text>
+        </Button>
+      </View>
+      {tabIndex === 0 ? (
         <>
-          <View>
-            <Button
-              onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
-            >
-              <Text>Alterar foto de perfil</Text>
+          <Text category="h6">Dados do perfil</Text>
+          {!editModeEnabled ? (
+            <Button onPress={() => setEditModeEnabled(!editModeEnabled)}>
+              <Text>Editar informações do perfil</Text>
             </Button>
-            {profileImage !== user?.profileImage ? (
-              <Button
-                onPress={() => setProfileImage(authState?.user?.profileImage!)}
-                appearance="outline"
-              >
-                <Text>Cancelar</Text>
-              </Button>
-            ) : null}
-          </View>
-          <Input
-            placeholder="Nome de usuário *"
-            value={name}
-            onChangeText={(name) => setName(name)}
-            accessoryLeft={PersonIcon}
+          ) : null}
+          <Avatar
+            style={{ width: 150, height: 150 }}
+            size="giant"
+            source={{ uri: profileImage! }}
           />
-          <Input
-            placeholder="Tipo de conta *"
-            value={role === UserRole.GUARDIAN ? "Responsável" : "Professor(a)"}
-            accessoryLeft={
-              role === UserRole.GUARDIAN ? (
-                <GuardianIcon
-                  width={ICON_SIZE}
-                  height={ICON_SIZE}
-                  color="#c4c8d1"
-                />
-              ) : (
-                <TutorIcon
-                  width={ICON_SIZE}
-                  height={ICON_SIZE}
-                  color="#c4c8d1"
-                />
-              )
-            }
-            disabled
-          />
-          <Input
-            placeholder="Email *"
-            value={email}
-            disabled
-            accessoryLeft={EmailIcon}
-          />
-          <MaskInput
-            mask={PHONE_MASK}
-            value={phone}
-            onChangeText={(phone) => setPhone(phone)}
-            placeholder="Telefone (contato) *"
-            keyboardType="numeric"
-          />
+          {editModeEnabled ? (
+            <>
+              <View>
+                <Button
+                  onPress={() =>
+                    handleSetSingleSelectedImageState(setProfileImage)
+                  }
+                >
+                  <Text>Alterar foto de perfil</Text>
+                </Button>
+                {profileImage !== user?.profileImage ? (
+                  <Button
+                    onPress={() =>
+                      setProfileImage(authState?.user?.profileImage!)
+                    }
+                    appearance="outline"
+                  >
+                    <Text>Cancelar</Text>
+                  </Button>
+                ) : null}
+              </View>
+              <Input
+                placeholder="Nome de usuário *"
+                value={name}
+                onChangeText={(name) => setName(name)}
+                accessoryLeft={PersonIcon}
+              />
+              <Input
+                placeholder="Tipo de conta *"
+                value={
+                  role === UserRole.GUARDIAN ? "Responsável" : "Professor(a)"
+                }
+                accessoryLeft={
+                  role === UserRole.GUARDIAN ? (
+                    <GuardianIcon
+                      width={ICON_SIZE}
+                      height={ICON_SIZE}
+                      color="#c4c8d1"
+                    />
+                  ) : (
+                    <TutorIcon
+                      width={ICON_SIZE}
+                      height={ICON_SIZE}
+                      color="#c4c8d1"
+                    />
+                  )
+                }
+                disabled
+              />
+              <Input
+                placeholder="Email *"
+                value={email}
+                disabled
+                accessoryLeft={EmailIcon}
+              />
+              <MaskInput
+                mask={PHONE_MASK}
+                value={phone}
+                onChangeText={(phone) => setPhone(phone)}
+                placeholder="Telefone (contato) *"
+                keyboardType="numeric"
+              />
 
-          <Button onPress={handleUserUpdateClick}>
-            <Text>Confirmar alterações</Text>
+              <Button onPress={handleUserUpdateClick}>
+                <Text>Confirmar alterações</Text>
+              </Button>
+            </>
+          ) : (
+            <>
+              <View>
+                <PersonIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+                <Text>{`${user?.name} (${
+                  user?.role === UserRole.GUARDIAN
+                    ? "Responsável"
+                    : "Professor(a)"
+                })`}</Text>
+              </View>
+              <View>
+                <EmailIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+                <Text>{user?.email}</Text>
+              </View>
+              <View>
+                <PhoneIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+                <Text>{user?.phone}</Text>
+              </View>
+            </>
+          )}
+
+          <Button
+            appearance="outline"
+            onPress={onLogout}
+            accessoryLeft={LogoutIcon}
+          >
+            <Text>Sair do app</Text>
+          </Button>
+          <Button
+            appearance="outline"
+            onPress={() =>
+              handleDeleteUserClick(user?.id!, user?.profileImage!)
+            }
+          >
+            <Text>Excluir conta</Text>
           </Button>
         </>
       ) : (
         <>
-          <View>
-            <PersonIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            <Text>{`${user?.name} (${
-              user?.role === UserRole.GUARDIAN ? "Responsável" : "Professor(a)"
-            })`}</Text>
-          </View>
-          <View>
-            <EmailIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            <Text>{user?.email}</Text>
-          </View>
-          <View>
-            <PhoneIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            <Text>{user?.phone}</Text>
-          </View>
+          <Text category="h6">Alterar senha</Text>
+          <Input
+            placeholder="Senha atual *"
+            value={currentPassword}
+            onChangeText={(currentPassword) =>
+              setCurrentPassword(currentPassword)
+            }
+          />
+          <Input
+            placeholder="Nova senha *"
+            value={newPassword}
+            onChangeText={(newPassword) => setNewPassword(newPassword)}
+          />
+          <Input
+            placeholder="Confirme a nova senha *"
+            value={newPasswordConfirm}
+            onChangeText={(newPasswordConfirm) =>
+              setNewPasswordConfirm(newPasswordConfirm)
+            }
+          />
+          <Button onPress={handleUpdatePasswordClick}>
+            <Text>Alterar senha</Text>
+          </Button>
         </>
       )}
-
-      <Button
-        appearance="outline"
-        onPress={onLogout}
-        accessoryLeft={LogoutIcon}
-      >
-        <Text>Sair do app</Text>
-      </Button>
-      <Button
-        appearance="outline"
-        onPress={() => handleDeleteUserClick(user?.id!, user?.profileImage!)}
-      >
-        <Text>Excluir conta</Text>
-      </Button>
-    </View>
+    </ScrollView>
   );
 };
 

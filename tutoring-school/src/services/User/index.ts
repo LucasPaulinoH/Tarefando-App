@@ -19,6 +19,10 @@ const userApi = {
     axios
       .patch(`${CONTROLLER_URL}/profile-image`, { id, url })
       .then((response) => response.data),
+  validateCurrentPassword: (validatePasswordDTO: Object) =>
+    axios
+      .post(`${CONTROLLER_URL}/validate-password`, validatePasswordDTO)
+      .then((response) => response.data),
   deleteUser: (id: string): Promise<void> =>
     axios.delete(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
 };

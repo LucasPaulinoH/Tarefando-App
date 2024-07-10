@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { School } from "../../../services/School/type";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useState } from "react";
 import { Input, Button, Text, Avatar } from "@ui-kitten/components";
 import MaskInput from "react-native-mask-input";
@@ -71,7 +71,7 @@ const EditSchool = ({ navigation }: any) => {
   };
 
   return (
-    <View>
+    <ScrollView>
       <Text category="h6">Editar escola</Text>
       <View>
         <Avatar
@@ -150,7 +150,7 @@ const EditSchool = ({ navigation }: any) => {
       <Button onPress={handleEditSchoolClick} accessoryLeft={EditIcon}>
         Confirmar edição
       </Button>
-    </View>
+    </ScrollView>
   );
 };
 
