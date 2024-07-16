@@ -17,10 +17,10 @@ const taskApi = {
     axios
       .put(`${CONTROLLER_URL}/${taskId}/${isConcluded}`)
       .then((response) => response.data),
-      updateTaskImages: (id: string, urls: string[]) =>
-        axios
-          .patch(`${CONTROLLER_URL}/images`, { id, urls })
-          .then((response) => response.data),
+  updateTaskImages: (id: string, urls: string[]) =>
+    axios
+      .patch(`${CONTROLLER_URL}/images`, { id, urls })
+      .then((response) => response.data),
   deleteTask: (taskId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${taskId}`)

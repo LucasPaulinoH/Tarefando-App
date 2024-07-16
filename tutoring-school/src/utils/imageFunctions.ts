@@ -41,7 +41,7 @@ export const handleSetSingleSelectedImageState = async (
 };
 
 export const handleSetMultipleSelectedImageState = async (
-  setImages: Dispatch<SetStateAction<string[] | null>>
+  setImages: Dispatch<SetStateAction<string[] | null>> 
 ) => {
   const selectedImages = await selectMultipleImages();
 

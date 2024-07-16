@@ -32,7 +32,7 @@ const TutorAnnouncements = ({ navigation }: any) => {
     <ScrollView>
       <Button
         accessoryLeft={AddIcon}
-        onPress={() => navigation.navigate("AddSchool")}
+        onPress={() => navigation.navigate("AddAnnouncement")}
       >
         <Text>Adicionar comunicado</Text>
       </Button>

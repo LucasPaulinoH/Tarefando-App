@@ -75,3 +75,7 @@ export const SchoolIcon = (props: any): IconElement => (
 export const PhoneIcon = (props: any): IconElement => (
   <Icon {...props} name="phone-outline" />
 );
+
+export const SendMessageIcon = (props: any): IconElement => (
+  <Icon {...props} name="paper-plane-outline" />
+);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { User, UserCard } from "./type";
+import { AssociatedGuardianCard, User, UserCard } from "./type";
 import { API_BASE_URL } from "../api";
 
 const CONTROLLER_URL = `${API_BASE_URL}/users`;
@@ -10,6 +10,13 @@ const userApi = {
   getUserCard: (id: string): Promise<UserCard> =>
     axios
       .get(`${CONTROLLER_URL}/user-card/${id}`)
+      .then((response) => response.data),
+
+  getAllAssociatedGuardianCards: (
+    tutorId: string
+  ): Promise<AssociatedGuardianCard[]> =>
+    axios
+      .get(`${CONTROLLER_URL}/associated-guardians?tutorId=${tutorId}`)
       .then((response) => response.data),
   updateUser: (userId: string, updatedUser: Object): Promise<User> =>
     axios

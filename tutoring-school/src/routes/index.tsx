@@ -27,6 +27,7 @@ import {
   SchoolIcon,
   StudentsIcon,
 } from "../theme/Icons";
+import AddAnnouncement from "../screens/tutor/AddAnnouncement";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -91,6 +92,7 @@ const Routes = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
         <Stack.Screen name="Announcements" component={TutorAnnouncements} />
+        <Stack.Screen name="AddAnnouncement" component={AddAnnouncement} />
       </Stack.Navigator>
     );
   };

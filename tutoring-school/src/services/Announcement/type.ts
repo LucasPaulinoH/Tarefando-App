@@ -1,8 +1,15 @@
 export interface Announcement {
   id?: string;
-  tutorId: string;
+  userId: string;
   receiverIds: string[];
   title: string;
   description: string;
-  images: string[];
+  images?: string[];
+}
+
+export interface ReceivedAnnouncementDTO {
+  title: string;
+  description: string;
+  images?: string[];
+  authorId: string;
 }

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from "../api";
-import { Announcement } from "./type";
+import { Announcement, ReceivedAnnouncementDTO } from "./type";
 
 const CONTROLLER_URL = `${API_BASE_URL}/announcements`;
 
@@ -15,6 +15,12 @@ const announcementApi = {
     axios
       .get(`${CONTROLLER_URL}/search?tutorId=${tutorId}`)
       .then((response) => response.data),
+  getReceiverAnnouncements: (
+    receiverId: string
+  ): Promise<ReceivedAnnouncementDTO[]> =>
+    axios
+      .get(`${CONTROLLER_URL}/my?receiverId=${receiverId}`)
+      .then((response) => response.data),
   updateAnnouncement: (
     announcementId: string,
     updatedAnnouncement: Announcement
@@ -22,7 +28,10 @@ const announcementApi = {
     axios
       .put(`${CONTROLLER_URL}/${announcementId}`, updatedAnnouncement)
       .then((response) => response.data),
-
+  updateAnnouncementImages: (id: string, urls: string[]) =>
+    axios
+      .patch(`${CONTROLLER_URL}/images`, { id, urls })
+      .then((response) => response.data),
   deleteAnnouncement: (announcementId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${announcementId}`)

@@ -14,3 +14,9 @@ export interface UserCard {
   userName: string;
   profileImage?: string;
 }
+
+export interface AssociatedGuardianCard {
+  guardianId: string;
+  profileImage: string;
+  name: string;
+}
