@@ -6,7 +6,6 @@ import { useAuth } from "../../../context/AuthContext";
 import { Card, Text } from "@ui-kitten/components";
 import userApi from "../../../services/User";
 import { UserCard } from "../../../services/User/type";
-import { StudentsIcon } from "../../../theme/Icons";
 
 const GuardianAnnouncements = () => {
   const { authState } = useAuth();
@@ -14,28 +13,15 @@ const GuardianAnnouncements = () => {
   const [announcements, setAnnouncements] = useState<ReceivedAnnouncementDTO[]>(
     []
   );
-  const [authorCards, setAuthorCards] = useState<UserCard[]>([]);
+  const [authorCards, setAuthorCards] = useState<UserCard[]>([
+    { userName: "Carregando..." },
+  ]);
 
   const fetchAnnouncements = async () => {
     try {
       const announcementsResponse =
         await announcementApi.getReceiverAnnouncements(authState?.user?.id!);
       setAnnouncements(announcementsResponse);
-
-      const authorCardArray = [];
-      let iterableAuthorCard = null;
-      let iterableAnnouncement = null;
-
-      for (let i = 0; i < announcementsResponse.length; i++) {
-        iterableAnnouncement = announcementsResponse[i];
-
-        iterableAuthorCard = await userApi.getUserCard(
-          iterableAnnouncement.authorId
-        );
-        authorCardArray.push(iterableAuthorCard);
-      }
-
-      setAuthorCards(authorCardArray);
     } catch (error) {
       console.log("Error fetching announcements: ", error);
     }
@@ -47,24 +33,22 @@ const GuardianAnnouncements = () => {
 
   return (
     <ScrollView>
-      {announcements.map(
-        (announcement: ReceivedAnnouncementDTO, index: number) => (
-          <Card key={index}>
-            <Text category="h6">{announcement.title}</Text>
-            <Text>{announcement.description}</Text>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 5,
-                alignItems: "center",
-              }}
-            >
-              <Text>{`enviado por: ${authorCards[index].userName ?? "Carregando..."}`}</Text>
-            </View>
-          </Card>
-        )
-      )}
+      {announcements.length > 0? announcements.map((announcement, index) => (
+        <Card key={index}>
+          <Text category="h6">{announcement.title}</Text>
+          <Text>{announcement.description}</Text>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 5,
+              alignItems: "center",
+            }}
+          >
+           
+          </View>
+        </Card>
+      )) : null}
     </ScrollView>
   );
 };

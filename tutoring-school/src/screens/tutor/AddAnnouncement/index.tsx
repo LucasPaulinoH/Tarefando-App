@@ -66,7 +66,8 @@ const AddAnnouncement = ({ navigation }: any) => {
           updatedImageUrls
         );
       }
-      navigation.navigate("Announcements");
+
+      navigation.navigate("TutorAnnouncements");
     } catch (error) {
       console.log("Error adding announcement: ", error);
     }

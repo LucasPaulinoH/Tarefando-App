@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import styles from "./styles";
 import { Avatar, Button, Input, Text } from "@ui-kitten/components";
 import RoleSelectCard from "../../../components/RoleSelectCard";
@@ -123,9 +123,11 @@ const Register = ({ navigation }: any) => {
     </View>
   );
   return (
-    <View style={styles.mainContainer}>
-      {currentStep === 0 ? renderFirstStep : renderSecondStep}
-    </View>
+    <ScrollView>
+      <View style={styles.mainContainer}>
+        {currentStep === 0 ? renderFirstStep : renderSecondStep}
+      </View>
+    </ScrollView>
   );
 };
 

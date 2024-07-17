@@ -59,7 +59,7 @@ const Routes = () => {
   const GuardianAnnouncementsStack = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        <Stack.Screen name="Announcements" component={GuardianAnnouncements} />
+        <Stack.Screen name="GuardianAnnouncements" component={GuardianAnnouncements} />
       </Stack.Navigator>
     );
   };
@@ -91,7 +91,7 @@ const Routes = () => {
   const TutorAnnouncementsStack = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        <Stack.Screen name="Announcements" component={TutorAnnouncements} />
+        <Stack.Screen name="TutorAnnouncements" component={TutorAnnouncements} />
         <Stack.Screen name="AddAnnouncement" component={AddAnnouncement} />
       </Stack.Navigator>
     );

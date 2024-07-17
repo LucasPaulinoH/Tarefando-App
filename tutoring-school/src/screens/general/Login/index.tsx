@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Button, Input, Text } from "@ui-kitten/components";
 import styles from "./styles";
 import { useAuth } from "../../../context/AuthContext";
@@ -20,39 +20,45 @@ const Login = ({ navigation }: any) => {
   };
 
   return (
-    <View style={styles.mainContainer}>
-      <View style={styles.innerContainer}>
-        <Text category="h3">Tia Lady Ajuda</Text>
-        <Text category="h5">Acesse sua conta</Text>
-        <Input
-          placeholder="Email *"
-          value={email}
-          onChangeText={(email) => setEmail(email)}
-        />
-        <Input
-          placeholder="Senha *"
-          value={password}
-          onChangeText={(password) => setPassword(password)}
-          secureTextEntry
-        />
-        <Button onPress={handleLogin} style={styles.loginButton} accessoryLeft={LoginIcon}>
-          Conectar-se
-        </Button>
+    <ScrollView>
+      <View style={styles.mainContainer}>
+        <View style={styles.innerContainer}>
+          <Text category="h3">Tia Lady Ajuda</Text>
+          <Text category="h5">Acesse sua conta</Text>
+          <Input
+            placeholder="Email *"
+            value={email}
+            onChangeText={(email) => setEmail(email)}
+          />
+          <Input
+            placeholder="Senha *"
+            value={password}
+            onChangeText={(password) => setPassword(password)}
+            secureTextEntry
+          />
+          <Button
+            onPress={handleLogin}
+            style={styles.loginButton}
+            accessoryLeft={LoginIcon}
+          >
+            Conectar-se
+          </Button>
 
-        <View style={styles.notRegisteredYetRow}>
-          <Text category="s1">
-            Ainda não possui uma conta?{" "}
-            <Text
-              category="s1"
-              style={styles.newAccountText}
-              onPress={() => navigation.navigate("Register")}
-            >
-              Crie uma
+          <View style={styles.notRegisteredYetRow}>
+            <Text category="s1">
+              Ainda não possui uma conta?{" "}
+              <Text
+                category="s1"
+                style={styles.newAccountText}
+                onPress={() => navigation.navigate("Register")}
+              >
+                Crie uma
+              </Text>
             </Text>
-          </Text>
+          </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

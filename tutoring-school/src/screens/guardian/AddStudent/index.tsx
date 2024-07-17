@@ -44,7 +44,7 @@ const AddStudent = ({ navigation }: any) => {
       );
 
       const newStudent: Student = {
-        user: userId,
+        userId,
         name,
         grade,
         birthdate,

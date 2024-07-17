@@ -11,7 +11,7 @@ const announcementApi = {
       .then((response) => response.data),
   getAnnouncement: (id: string): Promise<Announcement> =>
     axios.get(`${CONTROLLER_URL}/${id}`).then((response) => response.data),
-  getAnnouncementsFromUser: (tutorId: string): Promise<Announcement[]> =>
+  getAnnouncementsFromUser: (tutorId: string): Promise<Object[]> =>
     axios
       .get(`${CONTROLLER_URL}/search?tutorId=${tutorId}`)
       .then((response) => response.data),

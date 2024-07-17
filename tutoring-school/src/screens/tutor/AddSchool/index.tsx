@@ -1,10 +1,8 @@
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import {
   Text,
   Input,
   Button,
-  IconElement,
-  Icon,
   Avatar,
 } from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
@@ -54,6 +52,7 @@ const AddSchool = ({ navigation }: any) => {
         district,
         city,
         state,
+        profileImage: null
       };
 
       const createdSchool = await schoolApi.createSchool(newSchool);
@@ -90,7 +89,7 @@ const AddSchool = ({ navigation }: any) => {
   }, [cep]);
 
   return (
-    <View>
+    <ScrollView>
       <Text category="h6">Nova escola</Text>
       <Avatar
         style={{ width: 150, height: 150 }}
@@ -170,7 +169,7 @@ const AddSchool = ({ navigation }: any) => {
       <Button accessoryLeft={AddIcon} onPress={handleAddSchoolClick}>
         Adicionar escola
       </Button>
-    </View>
+    </ScrollView>
   );
 };
 

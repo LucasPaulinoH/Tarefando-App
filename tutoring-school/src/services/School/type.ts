@@ -5,7 +5,7 @@ export interface School {
   description: string;
   phone: string;
   email: string;
-  profileImage?: string;
+  profileImage: string | null;
   cep: string;
   address: string;
   addressNumber: string;
