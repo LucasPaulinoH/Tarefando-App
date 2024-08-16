@@ -6,6 +6,7 @@ import { Announcement } from "../../../services/Announcement/type";
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, Card, Text } from "@ui-kitten/components";
 import { AddIcon, StudentsIcon } from "../../../theme/Icons";
+import * as SecureStore from "expo-secure-store";
 
 const TutorAnnouncements = ({ navigation }: any) => {
   const { authState } = useAuth();
@@ -28,6 +29,11 @@ const TutorAnnouncements = ({ navigation }: any) => {
     }, [authState?.user?.id])
   );
 
+  const handleAnnouncementDetailsClick = (announcement: Announcement) => {
+    SecureStore.setItem("selectedAnnouncement", JSON.stringify(announcement));
+    navigation.navigate("AnnouncementDetails");
+  };
+
   return (
     <ScrollView>
       <Button
@@ -38,10 +44,20 @@ const TutorAnnouncements = ({ navigation }: any) => {
       </Button>
 
       {announcements.map((announcement: Announcement) => (
-        <Card key={announcement.id}>
+        <Card
+          key={announcement.id}
+          onPress={() => handleAnnouncementDetailsClick(announcement)}
+        >
           <Text category="h6">{announcement.title}</Text>
           <Text>{announcement.description}</Text>
-          <View  style={{ display: "flex", flexDirection: "row" , gap: 5, alignItems: "center" }}>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 5,
+              alignItems: "center",
+            }}
+          >
             <StudentsIcon style={{ width: 17, height: 17 }} />
             <Text>
               {announcement.receiverIds ? announcement.receiverIds.length : 0}

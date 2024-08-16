@@ -28,6 +28,8 @@ import {
   StudentsIcon,
 } from "../theme/Icons";
 import AddAnnouncement from "../screens/tutor/AddAnnouncement";
+import AnnouncementDetails from "../screens/tutor/AnnouncementDetails";
+import EditAnnouncement from "../screens/tutor/EditAnnouncement";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -59,7 +61,10 @@ const Routes = () => {
   const GuardianAnnouncementsStack = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        <Stack.Screen name="GuardianAnnouncements" component={GuardianAnnouncements} />
+        <Stack.Screen
+          name="GuardianAnnouncements"
+          component={GuardianAnnouncements}
+        />
       </Stack.Navigator>
     );
   };
@@ -91,8 +96,16 @@ const Routes = () => {
   const TutorAnnouncementsStack = () => {
     return (
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        <Stack.Screen name="TutorAnnouncements" component={TutorAnnouncements} />
+        <Stack.Screen
+          name="TutorAnnouncements"
+          component={TutorAnnouncements}
+        />
         <Stack.Screen name="AddAnnouncement" component={AddAnnouncement} />
+        <Stack.Screen
+          name="AnnouncementDetails"
+          component={AnnouncementDetails}
+        />
+        <Stack.Screen name="EditAnnouncement" component={EditAnnouncement} />
       </Stack.Navigator>
     );
   };

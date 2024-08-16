@@ -108,16 +108,18 @@ const Me = ({ navigation }: any) => {
 
   const handleUpdatePasswordClick = async () => {
     try {
-      const validatePasswordDTO = {
-        id: authState?.user?.id!,
-        password: currentPassword,
-      };
+      if (newPassword === newPasswordConfirm) {
+        const updatePasswordDTO = {
+          id: authState?.user?.id!,
+          currentPassword,
+          newPassword,
+        };
+        
 
-      const isPasswordUpdateAllowed = await userApi.validateCurrentPassword(
-        validatePasswordDTO
-      );
-
-      if (isPasswordUpdateAllowed && newPassword === newPasswordConfirm) {
+        const updatedPasswordResponse = await userApi.updateUserPassword(
+          updatePasswordDTO
+        );
+        console.log(updatedPasswordResponse);
       }
     } catch (error) {
       console.error("Error updating user password: ", error);
