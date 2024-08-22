@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import { Button, Input, ButtonGroup } from "@ui-kitten/components";
+import { Button, Input, ButtonGroup, Card } from "@ui-kitten/components";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
 import {
@@ -9,16 +9,25 @@ import {
   DeleteIcon,
   EditIcon,
   SearchIcon,
+  UnlinkSchoolIcon,
 } from "../../../theme/Icons";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import StudentListItem from "../../../components/StudentListItem";
+import GenericModal from "../../../components/GenericModal";
 
 const GuardianHome = ({ navigation }: any) => {
-  const { authState, onLogout } = useAuth();
+  const { authState } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
+
+  const [
+    isDeleteStudentConfirmationVisible,
+    setIsDeleteStudentConfirmationVisible,
+  ] = useState(false);
+
+  const [studentIdToBeDeleted, setStudentIdToBeDeleted] = useState("");
 
   useEffect(() => {
     fetchSelfStudents(authState?.user?.id);
@@ -51,21 +60,59 @@ const GuardianHome = ({ navigation }: any) => {
     navigation.navigate("EditStudent");
   };
 
-  const handleDeleteStudentClick = async (studentId: string) => {
+  const handleDeleteStudent = async () => {
     try {
-      await studentApi.deleteStudent(studentId);
+      await studentApi.deleteStudent(studentIdToBeDeleted);
       fetchSelfStudents(authState?.user?.id);
     } catch (error) {
       console.error("Error deleting school: ", error);
     }
+    setIsDeleteStudentConfirmationVisible(false);
+  };
+
+  const handleSelectStudentForDeletion = (id: string) => {
+    setStudentIdToBeDeleted(id);
+    setIsDeleteStudentConfirmationVisible(true);
   };
 
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const deleteSchoolConfirmationModal = (
+    <GenericModal
+      isVisible={isDeleteStudentConfirmationVisible}
+      setIsVisible={setIsDeleteStudentConfirmationVisible}
+    >
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsDeleteStudentConfirmationVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja excluir este estudante?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button onPress={handleDeleteStudent}>Sim</Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsDeleteStudentConfirmationVisible(false)}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
+  );
   return (
     <View>
+      {deleteSchoolConfirmationModal}
       <Button
         accessoryLeft={AddIcon}
         onPress={() => {
@@ -97,7 +144,7 @@ const GuardianHome = ({ navigation }: any) => {
               <Button
                 accessoryLeft={DeleteIcon}
                 onPress={() => {
-                  handleDeleteStudentClick(student.id!);
+                  handleSelectStudentForDeletion(student.id!);
                 }}
               />
             </ButtonGroup>

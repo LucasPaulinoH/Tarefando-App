@@ -22,18 +22,3 @@ export const compareQueryStrings = (string1: string, string2: string): boolean =
 
 export const formatWithLeadingZero = (number: number) =>
   number < 10 ? `0${number}` : number.toString();
-
-export const MONTH_LABELS = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-];

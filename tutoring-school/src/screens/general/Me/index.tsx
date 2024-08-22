@@ -1,6 +1,13 @@
 import { ScrollView, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import { Avatar, Button, Input, Text } from "@ui-kitten/components";
+import {
+  Avatar,
+  Button,
+  Card,
+  Input,
+  Modal,
+  Text,
+} from "@ui-kitten/components";
 import { useEffect, useState } from "react";
 import { UserRole } from "../../../types/Types";
 import {
@@ -8,6 +15,7 @@ import {
   LogoutIcon,
   PersonIcon,
   PhoneIcon,
+  UnlinkSchoolIcon,
 } from "../../../theme/Icons";
 import GuardianIcon from "../../../../assets/svg/guardian-card-icon.svg";
 import TutorIcon from "../../../../assets/svg/tutor-card-icon.svg";
@@ -20,6 +28,7 @@ import userApi from "../../../services/User";
 import { User } from "../../../services/User/type";
 import MaskInput from "react-native-mask-input";
 import { PHONE_MASK } from "../../../utils/masks";
+import GenericModal from "../../../components/GenericModal";
 
 const ICON_SIZE = 24;
 
@@ -34,13 +43,16 @@ const Me = ({ navigation }: any) => {
     authState?.user?.profileImage!
   );
   const [name, setName] = useState(authState?.user?.name);
-  const [email, setEmail] = useState(authState?.user?.email);
+  const email = authState?.user?.email;
   const [phone, setPhone] = useState(authState?.user?.phone);
   const role = authState?.user?.role as UserRole;
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+
+  const [isConfirmQuitVisible, setIsConfirmQuitVisible] = useState(false);
+  const [isDeleteAccountVisible, setIsDeleteAccountVisible] = useState(false);
 
   const handleUserUpdateClick = async () => {
     try {
@@ -100,6 +112,8 @@ const Me = ({ navigation }: any) => {
       }
 
       await userApi.deleteUser(userId);
+      setIsDeleteAccountVisible(false);
+
       onLogout;
     } catch (error) {
       console.error("Error deleting school: ", error);
@@ -114,7 +128,6 @@ const Me = ({ navigation }: any) => {
           currentPassword,
           newPassword,
         };
-        
 
         const updatedPasswordResponse = await userApi.updateUserPassword(
           updatePasswordDTO
@@ -130,8 +143,80 @@ const Me = ({ navigation }: any) => {
     fetchUser();
   }, []);
 
+  const confirmQuitModal = (
+    <GenericModal
+      isVisible={isConfirmQuitVisible}
+      setIsVisible={setIsConfirmQuitVisible}
+    >
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsConfirmQuitVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja sair?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button onPress={onLogout}>Sim</Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsConfirmQuitVisible(false)}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
+  );
+
+  const deleteAccountModal = (
+    <GenericModal
+      isVisible={isDeleteAccountVisible}
+      setIsVisible={setIsDeleteAccountVisible}
+    >
+      <Card disabled={true}>
+        {/* <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsDeleteAccountVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja exluir sua conta?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            onPress={() =>
+              handleDeleteUserClick(user?.id!, user?.profileImage!)
+            }
+          >
+            Sim
+          </Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsDeleteAccountVisible(false)}
+          >
+            Não
+          </Button>
+        </View> */}
+      </Card>
+    </GenericModal>
+  );
+
   return (
     <ScrollView>
+      {confirmQuitModal}
+      {deleteAccountModal}
       <View style={{ display: "flex", flexDirection: "row", gap: 20 }}>
         <Button onPress={() => setTabIndex(0)}>
           <Text>Meu perfil</Text>
@@ -219,6 +304,12 @@ const Me = ({ navigation }: any) => {
               <Button onPress={handleUserUpdateClick}>
                 <Text>Confirmar alterações</Text>
               </Button>
+              <Button
+                onPress={() => setEditModeEnabled(false)}
+                appearance="outline"
+              >
+                <Text>Cancelar</Text>
+              </Button>
             </>
           ) : (
             <>
@@ -243,19 +334,17 @@ const Me = ({ navigation }: any) => {
 
           <Button
             appearance="outline"
-            onPress={onLogout}
+            onPress={() => setIsConfirmQuitVisible(true)}
             accessoryLeft={LogoutIcon}
           >
             <Text>Sair do app</Text>
           </Button>
-          <Button
+          {/* <Button
             appearance="outline"
-            onPress={() =>
-              handleDeleteUserClick(user?.id!, user?.profileImage!)
-            }
+            onPress={() => setIsDeleteAccountVisible(true)}
           >
             <Text>Excluir conta</Text>
-          </Button>
+          </Button> */}
         </>
       ) : (
         <>

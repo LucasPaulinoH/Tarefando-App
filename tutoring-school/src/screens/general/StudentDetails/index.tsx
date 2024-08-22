@@ -38,6 +38,7 @@ import { UserRole } from "../../../types/Types";
 import userApi from "../../../services/User";
 import { UserCard } from "../../../services/User/type";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
+import GenericModal from "../../../components/GenericModal";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
@@ -66,6 +67,10 @@ const StudentDetails = ({ navigation }: any) => {
     userName: "Carregando...",
     profileImage: "",
   });
+
+  const [isDeleteTaskConfirmationVisible, setIsDeleteTaskConfirmationVisible] =
+    useState(false);
+  const [taskIdToBeDeleted, setTaskIdToBeDeleted] = useState("");
 
   const handleTaskDetailsClick = (taskId: string) => {
     SecureStore.setItem("selectedTaskId", JSON.stringify(taskId));
@@ -111,10 +116,10 @@ const StudentDetails = ({ navigation }: any) => {
     navigation.navigate("EditTask");
   };
 
-  const handleDeleteTaskClick = async (taskId: string) => {
+  const handleDeleteTask = async () => {
     try {
       setMoreOptionsVisible(false);
-      await taskApi.deleteTask(taskId);
+      await taskApi.deleteTask(taskIdToBeDeleted);
 
       if (selectedTask.images !== null) {
         for (let i = 0; i < selectedTask.images.length; i++) {
@@ -126,6 +131,13 @@ const StudentDetails = ({ navigation }: any) => {
     } catch (error) {
       console.log("Error deleting task: ", error);
     }
+
+    setIsDeleteTaskConfirmationVisible(false);
+  };
+
+  const handleSelectTaskForDeletion = (id: string) => {
+    setTaskIdToBeDeleted(id);
+    setIsDeleteTaskConfirmationVisible(true);
   };
 
   const handleSchoolClick = () => {
@@ -210,8 +222,41 @@ const StudentDetails = ({ navigation }: any) => {
       )
   );
 
+  const deleteTaskConfirmationModal = (
+    <GenericModal
+      isVisible={isDeleteTaskConfirmationVisible}
+      setIsVisible={setIsDeleteTaskConfirmationVisible}
+    >
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsDeleteTaskConfirmationVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja excluir esta tarefa?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button onPress={handleDeleteTask}>Sim</Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsDeleteTaskConfirmationVisible(false)}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
+  );
+
   return (
     <ScrollView>
+      {deleteTaskConfirmationModal}
       <Text category="h5">{student!.name}</Text>
       <Text category="s1" style={{ textAlign: "justify" }}>
         {`${showStudentAgeString(
@@ -326,9 +371,9 @@ const StudentDetails = ({ navigation }: any) => {
                         </Button>
                         <Button
                           accessoryLeft={DeleteIcon}
-                          onPress={() =>
-                            handleDeleteTaskClick(selectedTask.id!)
-                          }
+                          onPress={() => {
+                            handleSelectTaskForDeletion(selectedTask.id!);
+                          }}
                         >
                           Excluir tarefa
                         </Button>

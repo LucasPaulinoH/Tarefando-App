@@ -2,21 +2,13 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
-  IndexPath,
   Input,
   Text,
 } from "@ui-kitten/components";
 import { View, Image, ScrollView } from "react-native";
 import { AddIcon, CloseIcon } from "../../../theme/Icons";
-import {
-  DayPicker,
-  MonthPicker,
-  YearPicker,
-  fillDaysOfMonth,
-  fillYearList,
-} from "../../../components/DatePickers";
 import { useCallback, useEffect, useState } from "react";
-import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
+import { compareQueryStrings, dateToString } from "../../../utils/stringUtils";
 import { Subject } from "../../../services/Subject/type";
 import subjectApi from "../../../services/Subject";
 import taskApi from "../../../services/Task";
@@ -27,6 +19,7 @@ import {
   handleSetMultipleSelectedImageState,
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const GALLERY_IMAGE_SIZE = 160;
 
@@ -40,26 +33,16 @@ const AddTask = ({ navigation }: any) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
-  const [images, setImages] = useState<string[] | null>(null);
+  
+  const [deadlineDate, setDeadlineDate] = useState(new Date());
+  const [isDeadlineDateModalVisible, setIsDeadlineDateModalVisible] =
+    useState(false);
 
-  const YEAR_LIST = fillYearList(false, true);
+  const [images, setImages] = useState<string[] | null>(null);
 
   const [autocompleteSubjects, setAutocompleteSubjects] = useState<Subject[]>(
     []
   );
-
-  const [dayIndex, setDayIndex] = useState<IndexPath>(new IndexPath(0));
-  const [monthIndex, setMonthIndex] = useState<IndexPath>(new IndexPath(0));
-  const [yearIndex, setYearIndex] = useState<IndexPath>(
-    new IndexPath(YEAR_LIST.length - 1)
-  );
-
-  const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LIST[yearIndex.row];
-  const selectedDayLabel = fillDaysOfMonth(
-    Number(selectedYearLabel),
-    monthIndex.row
-  )[dayIndex.row];
 
   const fetchSubjectsForAutocomplete = async () => {
     try {
@@ -96,12 +79,6 @@ const AddTask = ({ navigation }: any) => {
       } else {
         subjectId = idkWhatNameToPutInThis[0].id!;
       }
-
-      const deadlineDate = new Date(
-        selectedYearLabel,
-        monthIndex.row,
-        selectedDayLabel
-      );
 
       const newTaskResponse = await taskApi.createTask({
         subjectId,
@@ -156,6 +133,17 @@ const AddTask = ({ navigation }: any) => {
 
   return (
     <ScrollView>
+      {isDeadlineDateModalVisible && (
+        <DateTimePicker
+          mode="date"
+          display="spinner"
+          value={deadlineDate}
+          onChange={(_: any, selectedDate: Date) => {
+            setDeadlineDate(selectedDate);
+            setIsDeadlineDateModalVisible(false);
+          }}
+        />
+      )}
       <Text category="h6">{`Nova tarefa de ${studentName}`}</Text>
       <Input
         placeholder="Título *"
@@ -180,9 +168,7 @@ const AddTask = ({ navigation }: any) => {
           <AutocompleteItem key={index} title={subject.name} />
         ))}
       </Autocomplete>
-      <Button
-        onPress={() => handleSetMultipleSelectedImageState(setImages)}
-      >
+      <Button onPress={() => handleSetMultipleSelectedImageState(setImages)}>
         <Text>Adicione imagens</Text>
       </Button>
       <Text>{` ${
@@ -208,25 +194,11 @@ const AddTask = ({ navigation }: any) => {
           ))}
       </View>
       <View>
-        <DayPicker
-          selectedLabel={selectedDayLabel}
-          index={dayIndex}
-          setIndex={setDayIndex}
-          month={monthIndex.row}
-          year={Number(selectedYearLabel)}
-          width="100%"
-        />
-        <MonthPicker
-          selectedLabel={selectedMonthLabel}
-          index={monthIndex}
-          setIndex={setMonthIndex}
-          width="100%"
-        />
-        <YearPicker
-          selectedLabel={selectedYearLabel}
-          index={yearIndex}
-          setIndex={setYearIndex}
-          width="100%"
+        <Input
+          label="Data de entrega *"
+          placeholder="dd/mm/aaaa"
+          value={dateToString(deadlineDate, true)}
+          onPress={() => setIsDeadlineDateModalVisible(true)}
         />
       </View>
       <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>

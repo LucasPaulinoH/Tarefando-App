@@ -1,48 +1,24 @@
 import { View } from "react-native";
-import { Text, Input, Button, Select, IndexPath } from "@ui-kitten/components";
+import { Text, Input, Button } from "@ui-kitten/components";
 import React, { useState } from "react";
 import { AddIcon } from "../../../theme/Icons";
-import { MONTH_LABELS } from "../../../utils/stringUtils";
-import {
-  DayPicker,
-  MonthPicker,
-  YearPicker,
-  fillDaysOfMonth,
-  fillYearList,
-} from "../../../components/DatePickers";
 import studentApi from "../../../services/Student";
 import { Student } from "../../../services/Student/type";
 import { useAuth } from "../../../context/AuthContext";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { dateToString } from "../../../utils/stringUtils";
 
 const AddStudent = ({ navigation }: any) => {
   const { authState } = useAuth();
 
   const [name, setName] = useState("");
-
-  const YEAR_LIST = fillYearList(true, false);
-
-  const [dayIndex, setDayIndex] = useState<IndexPath>(new IndexPath(0));
-  const [monthIndex, setMonthIndex] = useState<IndexPath>(new IndexPath(0));
-  const [yearIndex, setYearIndex] = useState<IndexPath>(new IndexPath(1));
-
+  const [birthdate, setBirthdate] = useState(new Date());
+  const [isBirthdayModalVisible, setIsBirthdayModalVisible] = useState(false);
   const [grade, setGrade] = useState("");
-
-  const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel = YEAR_LIST[yearIndex.row];
-  const selectedDayLabel = fillDaysOfMonth(
-    Number(selectedYearLabel),
-    monthIndex.row
-  )[dayIndex.row];
 
   const handleAddStudentClick = async () => {
     const userId = authState?.user?.id;
     try {
-      const birthdate = new Date(
-        selectedYearLabel,
-        monthIndex.row,
-        selectedDayLabel
-      );
-
       const newStudent: Student = {
         userId,
         name,
@@ -60,6 +36,17 @@ const AddStudent = ({ navigation }: any) => {
 
   return (
     <View>
+      {isBirthdayModalVisible && (
+        <DateTimePicker
+          mode="date"
+          display="spinner"
+          value={birthdate}
+          onChange={(_: any, selectedDate: Date) => {
+            setBirthdate(selectedDate);
+            setIsBirthdayModalVisible(false);
+          }}
+        />
+      )}
       <Text category="h6">Novo estudante</Text>
       <Input
         placeholder="Nome do estudante *"
@@ -67,29 +54,12 @@ const AddStudent = ({ navigation }: any) => {
         onChangeText={(name) => setName(name)}
       />
 
-      <View>
-        <DayPicker
-          selectedLabel={selectedDayLabel}
-          index={dayIndex}
-          setIndex={setDayIndex}
-          month={monthIndex.row}
-          year={Number(selectedYearLabel)}
-          width="100%"
-        />
-        <MonthPicker
-          selectedLabel={selectedMonthLabel}
-          index={monthIndex}
-          setIndex={setMonthIndex}
-          width="100%"
-        />
-        <YearPicker
-          selectedLabel={selectedYearLabel}
-          index={yearIndex}
-          setIndex={setYearIndex}
-          showPastYears
-          width="100%"
-        />
-      </View>
+      <Input
+        label="Data de nascimento *"
+        placeholder="dd/mm/aaaa"
+        value={dateToString(birthdate, true)}
+        onPress={() => setIsBirthdayModalVisible(true)}
+      />
       <Input
         placeholder="Série *"
         value={grade}

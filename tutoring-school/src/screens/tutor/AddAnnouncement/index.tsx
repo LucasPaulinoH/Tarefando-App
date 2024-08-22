@@ -19,6 +19,7 @@ import userApi from "../../../services/User";
 import { AssociatedGuardianCard } from "../../../services/User/type";
 import { Announcement } from "../../../services/Announcement/type";
 import announcementApi from "../../../services/Announcement";
+import GenericModal from "../../../components/GenericModal";
 
 const GALLERY_IMAGE_SIZE = 160;
 
@@ -98,11 +99,7 @@ const AddAnnouncement = ({ navigation }: any) => {
   }, []);
 
   const associatedGuardiansModal = (
-    <Modal
-      backdropStyle={styles.backdrop}
-      visible={isModalVisible}
-      onBackdropPress={() => setIsModalVisible(false)}
-    >
+    <GenericModal isVisible={isModalVisible} setIsVisible={setIsModalVisible}>
       <Card disabled={true}>
         <Text category="h6">Enviar para...</Text>
         {associatedGuardians.map((guardian: AssociatedGuardianCard) => (
@@ -134,7 +131,7 @@ const AddAnnouncement = ({ navigation }: any) => {
           Enviar
         </Button>
       </Card>
-    </Modal>
+    </GenericModal>
   );
 
   return (
@@ -193,8 +190,5 @@ export default AddAnnouncement;
 const styles = StyleSheet.create({
   container: {
     minHeight: 192,
-  },
-  backdrop: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
 });

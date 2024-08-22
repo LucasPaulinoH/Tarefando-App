@@ -1,18 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { MONTH_LABELS, compareQueryStrings } from "../../../utils/stringUtils";
-import {
-  DayPicker,
-  MonthPicker,
-  YearPicker,
-  fillDaysOfMonth,
-  fillYearList,
-  getDaysInMonth,
-} from "../../../components/DatePickers";
+import { compareQueryStrings, dateToString } from "../../../utils/stringUtils";
 import {
   Autocomplete,
   AutocompleteItem,
   Button,
-  IndexPath,
   Input,
   Text,
 } from "@ui-kitten/components";
@@ -23,15 +14,14 @@ import { CloseIcon, EditIcon } from "../../../theme/Icons";
 import * as SecureStore from "expo-secure-store";
 import { Subject } from "../../../services/Subject/type";
 import { Task } from "../../../services/Task/type";
-import { CURRENT_DATE } from "../../../constants/date";
 import { getSubjectsFromATaskArray } from "../../../utils/generalFunctions";
 import taskApi from "../../../services/Task";
 import {
   deleteImageFromFirebase,
   handleSetMultipleSelectedImageState,
-  selectMultipleImages,
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const GALLERY_IMAGE_SIZE = 160;
 
@@ -46,43 +36,19 @@ const EditTask = ({ navigation }: any) => {
 
   const [title, setTitle] = useState(selectedTask.title);
   const [description, setDescription] = useState(selectedTask.description);
-
   const [subject, setSubject] = useState("");
-  const [images, setImages] = useState<string[] | null>(selectedTask.images);
 
-  const YEAR_LIST = fillYearList(false, true);
+  const [deadlineDate, setDeadlineDate] = useState<Date>(
+    new Date(selectedTask.deadlineDate)
+  );
+  const [isDeadlineDateModalVisible, setIsDeadlineDateModalVisible] =
+    useState(false);
+
+  const [images, setImages] = useState<string[] | null>(selectedTask.images);
 
   const [autocompleteSubjects, setAutocompleteSubjects] = useState<Subject[]>(
     []
   );
-
-  const defaultBirthdate = new Date(selectedTask.deadlineDate);
-  const monthDaysQuantity = getDaysInMonth(
-    defaultBirthdate.getFullYear(),
-    defaultBirthdate.getMonth()
-  );
-
-  const [dayIndex, setDayIndex] = useState<IndexPath>(
-    new IndexPath(monthDaysQuantity - defaultBirthdate.getDate())
-  );
-  const [monthIndex, setMonthIndex] = useState<IndexPath>(
-    new IndexPath(defaultBirthdate.getMonth())
-  );
-  const [yearIndex, setYearIndex] = useState<IndexPath>(
-    new IndexPath(CURRENT_DATE.getFullYear() - defaultBirthdate.getFullYear())
-  );
-
-  const selectedMonthLabel = MONTH_LABELS[monthIndex.row];
-  const selectedYearLabel =
-    YEAR_LIST[
-      YEAR_LIST.findIndex(
-        (value) => value === new Date(selectedTask.deadlineDate).getFullYear()
-      )
-    ];
-  const selectedDayLabel = fillDaysOfMonth(
-    Number(selectedYearLabel),
-    monthIndex.row
-  )[dayIndex.row];
 
   const fetchSubjectsForAutocomplete = async () => {
     try {
@@ -109,17 +75,11 @@ const EditTask = ({ navigation }: any) => {
         subjectId = idkWhatNameToPutInThis[0].id!;
       }
 
-      const deadlineDate = new Date(
-        selectedYearLabel,
-        monthIndex.row,
-        selectedDayLabel
-      );
-
       const updatedTaskResponse = await taskApi.updateTask(selectedTask.id!, {
         subjectId,
         title,
         description,
-        deadlineDate,
+        deadlineDate: new Date(),
         studentId: selectedStudentId,
       } as Task);
 
@@ -145,7 +105,10 @@ const EditTask = ({ navigation }: any) => {
           uploadedImageUrls.push(iterableUploadedImageUrl);
         }
 
-        await taskApi.updateTaskImages(updatedTaskResponse.id!, uploadedImageUrls);
+        await taskApi.updateTaskImages(
+          updatedTaskResponse.id!,
+          uploadedImageUrls
+        );
       }
 
       navigation.navigate("StudentDetails");
@@ -186,6 +149,17 @@ const EditTask = ({ navigation }: any) => {
 
   return (
     <ScrollView>
+      {isDeadlineDateModalVisible && (
+        <DateTimePicker
+          mode="date"
+          display="spinner"
+          value={deadlineDate}
+          onChange={(_: any, selectedDate: Date) => {
+            setDeadlineDate(selectedDate);
+            setIsDeadlineDateModalVisible(false);
+          }}
+        />
+      )}
       <Text category="h6">Edição de tarefa</Text>
       <Text category="s1">{studentName}</Text>
       <Input
@@ -237,25 +211,11 @@ const EditTask = ({ navigation }: any) => {
           ))}
       </View>
       <View>
-        <DayPicker
-          selectedLabel={selectedDayLabel}
-          index={dayIndex}
-          setIndex={setDayIndex}
-          month={monthIndex.row}
-          year={Number(selectedYearLabel)}
-          width="100%"
-        />
-        <MonthPicker
-          selectedLabel={selectedMonthLabel}
-          index={monthIndex}
-          setIndex={setMonthIndex}
-          width="100%"
-        />
-        <YearPicker
-          selectedLabel={selectedYearLabel}
-          index={yearIndex}
-          setIndex={setYearIndex}
-          width="100%"
+        <Input
+          label="Data de entrega *"
+          placeholder="dd/mm/aaaa"
+          value={dateToString(deadlineDate, true)}
+          onPress={() => setIsDeadlineDateModalVisible(true)}
         />
       </View>
       <Button accessoryLeft={EditIcon} onPress={handleEditTask}>

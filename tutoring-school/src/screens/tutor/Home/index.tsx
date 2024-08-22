@@ -20,14 +20,26 @@ import {
   DeleteIcon,
   EditIcon,
   SearchIcon,
+  UnlinkSchoolIcon,
 } from "../../../theme/Icons";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
+import GenericModal from "../../../components/GenericModal";
 
 const TutorHome = ({ navigation }: any) => {
   const { authState } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
+
+  const [selectedSchoolToDeleteInfo, setSelectedSchoolToDeleteInfo] = useState({
+    id: "",
+    profileImage: "",
+  });
+
+  const [
+    isDeleteSchoolConfirmationVisible,
+    setIsDeleteSchoolConfirmationVisible,
+  ] = useState(false);
 
   useEffect(() => {
     fetchOwnedSchools(authState?.user?.id);
@@ -64,25 +76,70 @@ const TutorHome = ({ navigation }: any) => {
     navigation.navigate("EditSchool");
   };
 
-  const handleDeleteSchoolClick = async (
-    schoolId: string,
-    profileImage: string
-  ) => {
+  const handleDeleteSchool = async () => {
+    const { id, profileImage } = selectedSchoolToDeleteInfo;
+
     try {
-      if (profileImage) {
+      if (profileImage && profileImage !== "") {
         await deleteImageFromFirebase(profileImage);
         console.log(`${profileImage} successfully deleted from firebase`);
       }
 
-      await schoolApi.deleteSchool(schoolId);
+      await schoolApi.deleteSchool(id);
       fetchOwnedSchools(authState?.user?.id);
     } catch (error) {
       console.error("Error deleting school: ", error);
     }
+
+    setIsDeleteSchoolConfirmationVisible(false);
   };
+
+  const handleSelectSchoolForDeletion = (
+    schoolId: string,
+    profileImage: string
+  ) => {
+    setSelectedSchoolToDeleteInfo({
+      id: schoolId,
+      profileImage: profileImage,
+    });
+    setIsDeleteSchoolConfirmationVisible(true);
+  };
+
+  const deleteSchoolConfirmationModal = (
+    <GenericModal
+      isVisible={isDeleteSchoolConfirmationVisible}
+      setIsVisible={setIsDeleteSchoolConfirmationVisible}
+    >
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsDeleteSchoolConfirmationVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja excluir esta escola?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button onPress={handleDeleteSchool}>Sim</Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsDeleteSchoolConfirmationVisible(false)}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
+  );
 
   return (
     <View>
+      {deleteSchoolConfirmationModal}
       <Button
         accessoryLeft={AddIcon}
         onPress={() => navigation.navigate("AddSchool")}
@@ -126,7 +183,10 @@ const TutorHome = ({ navigation }: any) => {
                 <Button
                   accessoryLeft={DeleteIcon}
                   onPress={() =>
-                    handleDeleteSchoolClick(school.id!, school.profileImage!)
+                    handleSelectSchoolForDeletion(
+                      school.id!,
+                      school.profileImage!
+                    )
                   }
                 />
               </ButtonGroup>

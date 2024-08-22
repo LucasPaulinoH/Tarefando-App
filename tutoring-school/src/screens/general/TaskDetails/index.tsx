@@ -1,13 +1,18 @@
 import { View, Image, ScrollView } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { Button, Text } from "@ui-kitten/components";
+import { Button, Card, Text } from "@ui-kitten/components";
 import { Task } from "../../../services/Task/type";
-import { CalendarIcon, FinishedTaskIcon } from "../../../theme/Icons";
+import {
+  CalendarIcon,
+  FinishedTaskIcon,
+  UnlinkSchoolIcon,
+} from "../../../theme/Icons";
 import styles from "./styles";
 import { dateToString } from "../../../utils/stringUtils";
 import subjectApi from "../../../services/Subject";
 import { useEffect, useState } from "react";
 import taskApi from "../../../services/Task";
+import GenericModal from "../../../components/GenericModal";
 
 const TaskDetails = () => {
   const selectedTaskId: string = JSON.parse(
@@ -20,6 +25,11 @@ const TaskDetails = () => {
   const deadlineDateAsDate = new Date(selectedTask.deadlineDate);
 
   const [refetch, setRefetch] = useState(false);
+
+  const [
+    isConcludeTaskConfirmationVisible,
+    setIsConcludeTaskConfirmationVisible,
+  ] = useState(false);
 
   const fetchSelectedTask = async () => {
     try {
@@ -38,6 +48,7 @@ const TaskDetails = () => {
       console.warn("Error concluding task: ", error);
     }
     setRefetch(false);
+    setIsConcludeTaskConfirmationVisible(false);
   };
 
   const getSelectedTaskSubjectName = async () => {
@@ -61,8 +72,41 @@ const TaskDetails = () => {
     getSelectedTaskSubjectName();
   }, [selectedTask]);
 
+  const concludeTaskConfirmationModal = (
+    <GenericModal
+      isVisible={isConcludeTaskConfirmationVisible}
+      setIsVisible={setIsConcludeTaskConfirmationVisible}
+    >
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsConcludeTaskConfirmationVisible(false)}
+          appearance="ghost"
+        />
+        <Text>Tem certeza que deseja marcar esta tarefa como concluída?</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button onPress={handleConcludeTaskClick}>Sim</Button>
+          <Button
+            appearance="outline"
+            onPress={() => setIsConcludeTaskConfirmationVisible(false)}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
+  );
+
   return (
     <ScrollView>
+      {concludeTaskConfirmationModal}
       <Text category="h5">{selectedTask.title}</Text>
       <Text category="s1" style={{ textAlign: "justify" }}>
         {subjectName}
@@ -96,7 +140,7 @@ const TaskDetails = () => {
           )}
           style={styles.concludeButton}
           appearance="filled"
-          onPress={handleConcludeTaskClick}
+          onPress={() => setIsConcludeTaskConfirmationVisible(true)}
         >
           {() => (
             <Text style={styles.concludeButtonLabel}>
