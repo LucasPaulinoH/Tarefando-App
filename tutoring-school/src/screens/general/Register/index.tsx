@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import styles from "./styles";
 import { Avatar, Button, Input, Text } from "@ui-kitten/components";
@@ -10,26 +10,63 @@ import {
   handleSetSingleSelectedImageState,
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { registerValidationSchema } from "../../../validations/register";
+import { PHONE_MASK } from "../../../utils/masks";
+import MaskInput from "react-native-mask-input";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(registerValidationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.TUTOR);
-  const [password, setPassword] = useState("");
 
   const handleRoleClick = (role: UserRole) => {
     setRole(role);
   };
 
+  const handleFinishFirstStep = (formData: any) => {
+    setUserData({
+      name: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    });
+    setCurrentStep(1);
+  };
+
   const handleRegistration = async () => {
     try {
-      const newUserData = { name, email, phone, role, password };
+      const newUserData = {
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        role,
+        password: userData.password,
+      };
 
       const createdUser = await auth.onRegister!(newUserData);
 
@@ -70,28 +107,112 @@ const Register = ({ navigation }: any) => {
           <Text>Limpar</Text>
         </Button>
       </View>
-      <Input
-        placeholder="Nome de usuário *"
-        value={name}
-        onChangeText={(name) => setName(name)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Nome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.firstName ? "danger" : "basic"}
+            caption={errors.firstName ? errors.firstName.message : ""}
+          />
+        )}
+        name="firstName"
       />
-      <Input
-        placeholder="Email *"
-        value={email}
-        onChangeText={(email) => setEmail(email)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Sobrenome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.lastName ? "danger" : "basic"}
+            caption={errors.lastName ? errors.lastName.message : ""}
+          />
+        )}
+        name="lastName"
       />
-      <Input
-        placeholder="Telefone *"
-        value={phone}
-        onChangeText={(phone) => setPhone(phone)}
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Email *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.email ? "danger" : "basic"}
+            caption={errors.email ? errors.email.message : ""}
+          />
+        )}
+        name="email"
       />
-      <Input
-        placeholder="Senha *"
-        value={password}
-        onChangeText={(password) => setPassword(password)}
-        secureTextEntry
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Telefone (contato) *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.phone ? "danger" : "basic"}
+            caption={errors.phone ? errors.phone.message : ""}
+          />
+        )}
+        name="phone"
       />
-      <Button onPress={() => setCurrentStep(1)}>Confirmar</Button>
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Senha *"
+            value={value}
+            onChangeText={onChange}
+            secureTextEntry
+            status={errors.password ? "danger" : "basic"}
+            caption={errors.password ? errors.password.message : ""}
+          />
+        )}
+        name="password"
+      />
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Confirme a senha *"
+            value={value}
+            onChangeText={onChange}
+            secureTextEntry
+            status={errors.confirmPassword ? "danger" : "basic"}
+            caption={
+              errors.confirmPassword ? errors.confirmPassword.message : ""
+            }
+          />
+        )}
+        name="confirmPassword"
+      />
+
+      <Button onPress={handleSubmit(handleFinishFirstStep)}>Confirmar</Button>
     </View>
   );
 
@@ -122,6 +243,7 @@ const Register = ({ navigation }: any) => {
       </Button>
     </View>
   );
+
   return (
     <ScrollView>
       <View style={styles.mainContainer}>

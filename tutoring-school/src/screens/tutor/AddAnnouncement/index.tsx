@@ -7,7 +7,6 @@ import {
   Card,
   CheckBox,
   Input,
-  Modal,
   Text,
 } from "@ui-kitten/components";
 import { CloseIcon, SendMessageIcon } from "../../../theme/Icons";
@@ -20,14 +19,19 @@ import { AssociatedGuardianCard } from "../../../services/User/type";
 import { Announcement } from "../../../services/Announcement/type";
 import announcementApi from "../../../services/Announcement";
 import GenericModal from "../../../components/GenericModal";
+import { Controller, useForm } from "react-hook-form";
+import { announcementValidationSchema } from "../../../validations/announcements";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const GALLERY_IMAGE_SIZE = 160;
 
 const AddAnnouncement = ({ navigation }: any) => {
   const { authState } = useAuth();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [announcementContent, setAnnouncementContent] = useState({
+    title: "",
+    description: "",
+  });
   const [images, setImages] = useState([]);
   const [receiverIds, setReceiverIds] = useState<string[]>([]);
 
@@ -37,12 +41,32 @@ const AddAnnouncement = ({ navigation }: any) => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(announcementValidationSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
+
+  const storeAnnouncementContent = (formData: any) => {
+    setIsModalVisible(true);
+    setAnnouncementContent({
+      title: formData.title,
+      description: formData.description,
+    });
+  };
+
   const handleAddAnnouncementClick = async () => {
     try {
       const newAnnouncement: Announcement = {
         userId: authState?.user?.id!,
-        title,
-        description,
+        title: announcementContent.title,
+        description: announcementContent.description,
         receiverIds,
       };
 
@@ -137,18 +161,42 @@ const AddAnnouncement = ({ navigation }: any) => {
   return (
     <ScrollView>
       <Text category="h6">Novo comunicado</Text>
-      <Input
-        placeholder="Título *"
-        value={title}
-        onChangeText={(title) => setTitle(title)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Título *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.title ? "danger" : "basic"}
+            caption={errors.title ? errors.title.message : ""}
+          />
+        )}
+        name="title"
       />
-      <Input
-        placeholder="Descrição *"
-        multiline={true}
-        numberOfLines={5}
-        value={description}
-        onChangeText={(description) => setDescription(description)}
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Descrição *"
+            value={value}
+            onChangeText={onChange}
+            multiline={true}
+            numberOfLines={5}
+            status={errors.description ? "danger" : "basic"}
+            caption={errors.description ? errors.description.message : ""}
+          />
+        )}
+        name="description"
       />
+
       <Button onPress={() => handleSetMultipleSelectedImageState(setImages)}>
         <Text>Adicione imagens</Text>
       </Button>
@@ -176,7 +224,7 @@ const AddAnnouncement = ({ navigation }: any) => {
       </View>
       <Button
         accessoryLeft={SendMessageIcon}
-        onPress={() => setIsModalVisible(true)}
+        onPress={handleSubmit(storeAnnouncementContent)}
       >
         <Text>Enviar comunicado</Text>
       </Button>
@@ -186,9 +234,3 @@ const AddAnnouncement = ({ navigation }: any) => {
 };
 
 export default AddAnnouncement;
-
-const styles = StyleSheet.create({
-  container: {
-    minHeight: 192,
-  },
-});

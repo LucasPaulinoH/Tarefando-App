@@ -1,13 +1,6 @@
 import { ScrollView, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import {
-  Avatar,
-  Button,
-  Card,
-  Input,
-  Modal,
-  Text,
-} from "@ui-kitten/components";
+import { Avatar, Button, Card, Input, Text } from "@ui-kitten/components";
 import { useEffect, useState } from "react";
 import { UserRole } from "../../../types/Types";
 import {
@@ -26,9 +19,13 @@ import {
 } from "../../../utils/imageFunctions";
 import userApi from "../../../services/User";
 import { User } from "../../../services/User/type";
-import MaskInput from "react-native-mask-input";
-import { PHONE_MASK } from "../../../utils/masks";
 import GenericModal from "../../../components/GenericModal";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  passwordUpdateValidationSchema,
+  userDataValidationSchema,
+} from "../../../validations/me";
 
 const ICON_SIZE = 24;
 
@@ -44,7 +41,6 @@ const Me = ({ navigation }: any) => {
   );
   const [name, setName] = useState(authState?.user?.name);
   const email = authState?.user?.email;
-  const [phone, setPhone] = useState(authState?.user?.phone);
   const role = authState?.user?.role as UserRole;
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -54,15 +50,33 @@ const Me = ({ navigation }: any) => {
   const [isConfirmQuitVisible, setIsConfirmQuitVisible] = useState(false);
   const [isDeleteAccountVisible, setIsDeleteAccountVisible] = useState(false);
 
-  const handleUserUpdateClick = async () => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(
+      tabIndex === 0 ? userDataValidationSchema : passwordUpdateValidationSchema
+    ),
+    defaultValues:
+      tabIndex === 0
+        ? {
+            firstName: authState?.user?.name.split(" ")[0],
+            lastName: authState?.user?.name.split(" ")[1],
+            phone: authState?.user?.phone,
+          }
+        : { currentPassword: "", newPassword: "", confirmNewPassword: "" },
+  });
+
+  const handleUserUpdateClick = async (formData: any) => {
     try {
       if (wasUserEdited()) {
         const user = authState?.user;
 
         await userApi.updateUser(user?.id!, {
-          name,
+          name: `${formData.firstName} ${formData.lastName}`,
           email,
-          phone,
+          phone: formData.phone,
           role,
         });
 
@@ -96,7 +110,7 @@ const Me = ({ navigation }: any) => {
     return (
       user?.name !== name ||
       user?.email !== email ||
-      user?.phone !== phone ||
+      user?.phone !== "" ||
       user?.profileImage !== profileImage
     );
   };
@@ -259,11 +273,37 @@ const Me = ({ navigation }: any) => {
                   </Button>
                 ) : null}
               </View>
-              <Input
-                placeholder="Nome de usuário *"
-                value={name}
-                onChangeText={(name) => setName(name)}
-                accessoryLeft={PersonIcon}
+              <Controller
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <Input
+                    placeholder="Nome *"
+                    value={value}
+                    onChangeText={onChange}
+                    status={errors.firstName ? "danger" : "basic"}
+                    caption={errors.firstName ? errors.firstName.message : ""}
+                  />
+                )}
+                name="firstName"
+              />
+              <Controller
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <Input
+                    placeholder="Sobrenome *"
+                    value={value}
+                    onChangeText={onChange}
+                    status={errors.lastName ? "danger" : "basic"}
+                    caption={errors.lastName ? errors.lastName.message : ""}
+                  />
+                )}
+                name="lastName"
               />
               <Input
                 placeholder="Tipo de conta *"
@@ -293,15 +333,24 @@ const Me = ({ navigation }: any) => {
                 disabled
                 accessoryLeft={EmailIcon}
               />
-              <MaskInput
-                mask={PHONE_MASK}
-                value={phone}
-                onChangeText={(phone) => setPhone(phone)}
-                placeholder="Telefone (contato) *"
-                keyboardType="numeric"
+              <Controller
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <Input
+                    placeholder="Telefone (contato) *"
+                    value={value}
+                    onChangeText={onChange}
+                    status={errors.phone ? "danger" : "basic"}
+                    caption={errors.phone ? errors.phone.message : ""}
+                  />
+                )}
+                name="phone"
               />
 
-              <Button onPress={handleUserUpdateClick}>
+              <Button onPress={handleSubmit(handleUserUpdateClick)}>
                 <Text>Confirmar alterações</Text>
               </Button>
               <Button
@@ -349,26 +398,67 @@ const Me = ({ navigation }: any) => {
       ) : (
         <>
           <Text category="h6">Alterar senha</Text>
-          <Input
-            placeholder="Senha atual *"
-            value={currentPassword}
-            onChangeText={(currentPassword) =>
-              setCurrentPassword(currentPassword)
-            }
+          
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Senha atual *"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                status={errors.currentPassword ? "danger" : "basic"}
+                caption={
+                  errors.currentPassword ? errors.currentPassword.message : ""
+                }
+              />
+            )}
+            name="currentPassword"
           />
-          <Input
-            placeholder="Nova senha *"
-            value={newPassword}
-            onChangeText={(newPassword) => setNewPassword(newPassword)}
+
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Nova senha *"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                status={errors.newPassword ? "danger" : "basic"}
+                caption={errors.newPassword ? errors.newPassword.message : ""}
+              />
+            )}
+            name="newPassword"
           />
-          <Input
-            placeholder="Confirme a nova senha *"
-            value={newPasswordConfirm}
-            onChangeText={(newPasswordConfirm) =>
-              setNewPasswordConfirm(newPasswordConfirm)
-            }
+
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Confirme a nova senha *"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                status={errors.confirmNewPassword ? "danger" : "basic"}
+                caption={
+                  errors.confirmNewPassword
+                    ? errors.confirmNewPassword.message
+                    : ""
+                }
+              />
+            )}
+            name="confirmNewPassword"
           />
-          <Button onPress={handleUpdatePasswordClick}>
+          <Button onPress={handleSubmit(handleUpdatePasswordClick)}>
             <Text>Alterar senha</Text>
           </Button>
         </>

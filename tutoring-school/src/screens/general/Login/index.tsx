@@ -1,23 +1,34 @@
-import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, Input, Text } from "@ui-kitten/components";
-import styles from "./styles";
 import { useAuth } from "../../../context/AuthContext";
 import { LoginIcon } from "../../../theme/Icons";
+import { StyleSheet } from "react-native";
+import { Controller, useForm } from "react-hook-form";
+import { loginValidationSchema } from "../../../validations/login";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const Login = ({ navigation }: any) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { onLogin } = useAuth();
 
-  const auth = useAuth();
-
-  const handleLogin = async () => {
+  const handleLogin = async (formData: any) => {
     try {
-      await auth.onLogin!(email, password);
+      await onLogin!(formData.email, formData.password);
     } catch (error) {
       console.error("Error during login: ", error);
     }
   };
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(loginValidationSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   return (
     <ScrollView>
@@ -25,19 +36,41 @@ const Login = ({ navigation }: any) => {
         <View style={styles.innerContainer}>
           <Text category="h3">Tia Lady Ajuda</Text>
           <Text category="h5">Acesse sua conta</Text>
-          <Input
-            placeholder="Email *"
-            value={email}
-            onChangeText={(email) => setEmail(email)}
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Email *"
+                value={value}
+                onChangeText={onChange}
+                status={errors.email ? "danger" : "basic"}
+                caption={errors.email ? errors.email.message : ""}
+              />
+            )}
+            name="email"
           />
-          <Input
-            placeholder="Senha *"
-            value={password}
-            onChangeText={(password) => setPassword(password)}
-            secureTextEntry
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Senha *"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                status={errors.password ? "danger" : "basic"}
+                caption={errors.password ? errors.password.message : ""}
+              />
+            )}
+            name="password"
           />
           <Button
-            onPress={handleLogin}
+            onPress={handleSubmit(handleLogin)}
             style={styles.loginButton}
             accessoryLeft={LoginIcon}
           >
@@ -63,3 +96,32 @@ const Login = ({ navigation }: any) => {
 };
 
 export default Login;
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+    width: "100%",
+  },
+  innerContainer: {
+    width: "70%",
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+  },
+  loginButton: {
+    width: "100%",
+  },
+  notRegisteredYetRow: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 2,
+    alignItems: "center",
+  },
+  newAccountText: {
+    fontWeight: "bold",
+  },
+});
