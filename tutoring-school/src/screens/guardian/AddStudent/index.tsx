@@ -7,22 +7,36 @@ import { Student } from "../../../services/Student/type";
 import { useAuth } from "../../../context/AuthContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { dateToString } from "../../../utils/stringUtils";
+import { studentValidationSchema } from "../../../validations/student";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Controller, useForm } from "react-hook-form";
 
 const AddStudent = ({ navigation }: any) => {
   const { authState } = useAuth();
 
-  const [name, setName] = useState("");
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(studentValidationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      grade: "",
+    },
+  });
+
   const [birthdate, setBirthdate] = useState(new Date());
   const [isBirthdayModalVisible, setIsBirthdayModalVisible] = useState(false);
-  const [grade, setGrade] = useState("");
 
-  const handleAddStudentClick = async () => {
+  const handleAddStudentClick = async (formData: any) => {
     const userId = authState?.user?.id;
     try {
       const newStudent: Student = {
         userId,
-        name,
-        grade,
+        name: `${formData.firstName} ${formData.lastName}`,
+        grade: formData.grade,
         birthdate,
       };
 
@@ -48,10 +62,37 @@ const AddStudent = ({ navigation }: any) => {
         />
       )}
       <Text category="h6">Novo estudante</Text>
-      <Input
-        placeholder="Nome do estudante *"
-        value={name}
-        onChangeText={(name) => setName(name)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Nome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.firstName ? "danger" : "basic"}
+            caption={errors.firstName ? errors.firstName.message : ""}
+          />
+        )}
+        name="firstName"
+      />
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Sobrenome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.lastName ? "danger" : "basic"}
+            caption={errors.lastName ? errors.lastName.message : ""}
+          />
+        )}
+        name="lastName"
       />
 
       <Input
@@ -60,12 +101,26 @@ const AddStudent = ({ navigation }: any) => {
         value={dateToString(birthdate, true)}
         onPress={() => setIsBirthdayModalVisible(true)}
       />
-      <Input
-        placeholder="Série *"
-        value={grade}
-        onChangeText={(grade) => setGrade(grade)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Série *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.grade ? "danger" : "basic"}
+            caption={errors.grade ? errors.grade.message : ""}
+          />
+        )}
+        name="grade"
       />
-      <Button accessoryLeft={AddIcon} onPress={handleAddStudentClick}>
+      <Button
+        accessoryLeft={AddIcon}
+        onPress={handleSubmit(handleAddStudentClick)}
+      >
         Adicionar estudante
       </Button>
     </View>

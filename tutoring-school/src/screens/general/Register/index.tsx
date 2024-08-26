@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import styles from "./styles";
 import { Avatar, Button, Input, Text } from "@ui-kitten/components";
@@ -13,8 +13,6 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { registerValidationSchema } from "../../../validations/register";
-import { PHONE_MASK } from "../../../utils/masks";
-import MaskInput from "react-native-mask-input";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();

@@ -22,6 +22,10 @@ import {
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { taskValidationSchema } from "../../../validations/task";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { REQUIRED_FIELD_MSG } from "../../../validations/constants";
 
 const GALLERY_IMAGE_SIZE = 160;
 
@@ -32,10 +36,22 @@ const EditTask = ({ navigation }: any) => {
 
   const selectedTask: Task = JSON.parse(SecureStore.getItem("selectedTask")!);
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(taskValidationSchema),
+    defaultValues: {
+      title: selectedTask.title,
+      description: selectedTask.description,
+    },
+  });
+
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+
   const [studentName, setStudentName] = useState("...");
 
-  const [title, setTitle] = useState(selectedTask.title);
-  const [description, setDescription] = useState(selectedTask.description);
   const [subject, setSubject] = useState("");
 
   const [deadlineDate, setDeadlineDate] = useState<Date>(
@@ -59,61 +75,61 @@ const EditTask = ({ navigation }: any) => {
     }
   };
 
-  const handleEditTask = async () => {
-    try {
-      let subjectId = "";
+  const handleEditTask = async (formData: any) => {
+    if (submittedOnce && subject.length > 0) {
+      try {
+        let subjectId = "";
 
-      const idkWhatNameToPutInThis = autocompleteSubjects.filter(
-        (currentSubject) =>
-          currentSubject.name.toLocaleLowerCase() === subject.toLowerCase()
-      );
-
-      if (idkWhatNameToPutInThis.length === 0) {
-        const newSubjectResponse = await subjectApi.createSubject(subject);
-        subjectId = newSubjectResponse.id!;
-      } else {
-        subjectId = idkWhatNameToPutInThis[0].id!;
-      }
-
-      const updatedTaskResponse = await taskApi.updateTask(selectedTask.id!, {
-        subjectId,
-        title,
-        description,
-        deadlineDate: new Date(),
-        studentId: selectedStudentId,
-      } as Task);
-
-      if (images !== selectedTask.images && images?.length! > 0) {
-        let iterableImage = null;
-        for (let i = 0; i < selectedTask.images.length; i++) {
-          iterableImage = selectedTask.images[i];
-
-          await deleteImageFromFirebase(iterableImage);
-        }
-
-        const uploadedImageUrls: string[] = [];
-        let iterableUploadedImageUrl = "";
-
-        for (let i = 0; i < images?.length!; i++) {
-          iterableImage = images![i];
-
-          iterableUploadedImageUrl = await uploadImageToFirebase(
-            iterableImage,
-            `tasks/${updatedTaskResponse.id}/${i + 1}`
-          );
-
-          uploadedImageUrls.push(iterableUploadedImageUrl);
-        }
-
-        await taskApi.updateTaskImages(
-          updatedTaskResponse.id!,
-          uploadedImageUrls
+        const idkWhatNameToPutInThis = autocompleteSubjects.filter(
+          (currentSubject) =>
+            currentSubject.name.toLocaleLowerCase() === subject.toLowerCase()
         );
-      }
 
-      navigation.navigate("StudentDetails");
-    } catch (error) {
-      console.error("Error updating task: ", error);
+        if (idkWhatNameToPutInThis.length === 0) {
+          const newSubjectResponse = await subjectApi.createSubject(subject);
+          subjectId = newSubjectResponse.id!;
+        } else subjectId = idkWhatNameToPutInThis[0].id!;
+
+        const updatedTaskResponse = await taskApi.updateTask(selectedTask.id!, {
+          subjectId,
+          title: formData.title,
+          description: formData.description,
+          deadlineDate: new Date(),
+          studentId: selectedStudentId,
+        } as Task);
+
+        if (images !== selectedTask.images && images?.length! > 0) {
+          let iterableImage = null;
+          for (let i = 0; i < selectedTask.images.length; i++) {
+            iterableImage = selectedTask.images[i];
+
+            await deleteImageFromFirebase(iterableImage);
+          }
+
+          const uploadedImageUrls: string[] = [];
+          let iterableUploadedImageUrl = "";
+
+          for (let i = 0; i < images?.length!; i++) {
+            iterableImage = images![i];
+
+            iterableUploadedImageUrl = await uploadImageToFirebase(
+              iterableImage,
+              `tasks/${updatedTaskResponse.id}/${i + 1}`
+            );
+
+            uploadedImageUrls.push(iterableUploadedImageUrl);
+          }
+
+          await taskApi.updateTaskImages(
+            updatedTaskResponse.id!,
+            uploadedImageUrls
+          );
+        }
+
+        navigation.navigate("StudentDetails");
+      } catch (error) {
+        console.error("Error updating task: ", error);
+      }
     }
   };
 
@@ -139,6 +155,10 @@ const EditTask = ({ navigation }: any) => {
     }
   };
 
+  const showEmptySubjectError = () => {
+    return submittedOnce && !(subject.length > 0);
+  };
+
   useEffect(() => {
     getSubjectsFromATaskArray([selectedTask]).then((tasksSubjects) =>
       setSubject(tasksSubjects![0].name)
@@ -162,17 +182,39 @@ const EditTask = ({ navigation }: any) => {
       )}
       <Text category="h6">Edição de tarefa</Text>
       <Text category="s1">{studentName}</Text>
-      <Input
-        placeholder="Título *"
-        value={title}
-        onChangeText={(title) => setTitle(title)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Título *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.title ? "danger" : "basic"}
+            caption={errors.title ? errors.title.message : ""}
+          />
+        )}
+        name="title"
       />
-      <Input
-        placeholder="Descrição *"
-        multiline={true}
-        numberOfLines={5}
-        value={description}
-        onChangeText={(description) => setDescription(description)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Descrição *"
+            value={value}
+            onChangeText={onChange}
+            multiline={true}
+            numberOfLines={5}
+            status={errors.description ? "danger" : "basic"}
+            caption={errors.description ? errors.description.message : ""}
+          />
+        )}
+        name="description"
       />
       <Autocomplete
         placeholder="Disciplina *"
@@ -180,6 +222,8 @@ const EditTask = ({ navigation }: any) => {
         onSelect={onSelect}
         placement="inner top"
         onChangeText={(subject) => setSubject(subject)}
+        status={showEmptySubjectError() ? "danger" : "basic"}
+        caption={showEmptySubjectError() ? REQUIRED_FIELD_MSG : ""}
       >
         {filteredSubjects.map((subject, index) => (
           <AutocompleteItem key={index} title={subject.name} />
@@ -218,7 +262,13 @@ const EditTask = ({ navigation }: any) => {
           onPress={() => setIsDeadlineDateModalVisible(true)}
         />
       </View>
-      <Button accessoryLeft={EditIcon} onPress={handleEditTask}>
+      <Button
+        accessoryLeft={EditIcon}
+        onPress={handleSubmit((formData: any) => {
+          if (!submittedOnce) setSubmittedOnce(true);
+          handleEditTask(formData);
+        })}
+      >
         Confirmar edição
       </Button>
     </ScrollView>

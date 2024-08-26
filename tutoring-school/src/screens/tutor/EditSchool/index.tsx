@@ -4,26 +4,39 @@ import { ScrollView, View } from "react-native";
 import { useState } from "react";
 import { Input, Button, Text, Avatar } from "@ui-kitten/components";
 import MaskInput from "react-native-mask-input";
-import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
+import { CEP_MASK } from "../../../utils/masks";
 import schoolApi from "../../../services/School";
 import { EditIcon } from "../../../theme/Icons";
 import {
   handleSetSingleSelectedImageState,
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { schoolValidationSchema as schoolValidationSchema } from "../../../validations/school";
 
 const EditSchool = ({ navigation }: any) => {
   const selectedSchool: School = JSON.parse(
     SecureStore.getItem("selectedSchool")!
   );
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schoolValidationSchema),
+    defaultValues: {
+      name: selectedSchool.name,
+      phone: selectedSchool.phone,
+      email: selectedSchool.email,
+    },
+  });
+
   const [profileImage, setProfileImage] = useState<string | null>(
     selectedSchool.profileImage!
   );
-  const [name, setName] = useState(selectedSchool.name);
   const [description, setDescription] = useState(selectedSchool.description);
-  const [phone, setPhone] = useState(selectedSchool.phone);
-  const [email, setEmail] = useState(selectedSchool.email);
 
   const [cep, setCep] = useState(selectedSchool.cep);
   const [address, setAddress] = useState(selectedSchool.address);
@@ -34,16 +47,16 @@ const EditSchool = ({ navigation }: any) => {
   const [city, setCity] = useState(selectedSchool.city);
   const [state, setState] = useState(selectedSchool.state);
 
-  const handleEditSchoolClick = async () => {
+  const handleEditSchoolClick = async (formData: any) => {
     try {
       const { userId: tutorId } = selectedSchool;
 
       await schoolApi.updateSchool(selectedSchool.id!, {
         userId: tutorId,
-        name,
+        name: formData.name,
         description,
-        phone,
-        email,
+        phone: formData.phone,
+        email: formData.email,
         cep,
         address,
         addressNumber,
@@ -93,10 +106,21 @@ const EditSchool = ({ navigation }: any) => {
           <Text>Alterar foto da escola</Text>
         </Button>
       </View>
-      <Input
-        placeholder="Nome da escola *"
-        value={name}
-        onChangeText={(name) => setName(name)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Nome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.name ? "danger" : "basic"}
+            caption={errors.name ? errors.name.message : ""}
+          />
+        )}
+        name="name"
       />
       <Input
         placeholder="Descrição"
@@ -105,16 +129,38 @@ const EditSchool = ({ navigation }: any) => {
         value={description}
         onChangeText={(description) => setDescription(description)}
       />
-      <MaskInput
-        mask={PHONE_MASK}
-        value={phone}
-        onChangeText={(phone) => setPhone(phone)}
-        placeholder="Telefone (contato) *"
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Email *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.email ? "danger" : "basic"}
+            caption={errors.email ? errors.email.message : ""}
+          />
+        )}
+        name="email"
       />
-      <Input
-        placeholder="Email (contato) *"
-        value={email}
-        onChangeText={(email) => setEmail(email)}
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Telefone (contato) *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.phone ? "danger" : "basic"}
+            caption={errors.phone ? errors.phone.message : ""}
+          />
+        )}
+        name="phone"
       />
       <MaskInput
         mask={CEP_MASK}
@@ -147,7 +193,10 @@ const EditSchool = ({ navigation }: any) => {
         value={state}
         onChangeText={(state) => setState(state)}
       />
-      <Button onPress={handleEditSchoolClick} accessoryLeft={EditIcon}>
+      <Button
+        onPress={handleSubmit(handleEditSchoolClick)}
+        accessoryLeft={EditIcon}
+      >
         Confirmar edição
       </Button>
     </ScrollView>

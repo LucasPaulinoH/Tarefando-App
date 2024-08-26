@@ -7,28 +7,42 @@ import * as SecureStore from "expo-secure-store";
 import studentApi from "../../../services/Student";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { dateToString } from "../../../utils/stringUtils";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { studentValidationSchema } from "../../../validations/student";
 
 const EditStudent = ({ navigation }: any) => {
   const selectedStudent: Student = JSON.parse(
     SecureStore.getItem("selectedStudent")!
   );
 
-  const [name, setName] = useState(selectedStudent.name);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(studentValidationSchema),
+    defaultValues: {
+      firstName: selectedStudent.name.split(" ")[0],
+      lastName: selectedStudent.name.split(" ")[1],
+      grade: selectedStudent.grade,
+    },
+  });
+
   const [birthdate, setBirthdate] = useState<Date>(
     new Date(selectedStudent.birthdate)
   );
   const [isBirthdayModalVisible, setIsBirthdayModalVisible] = useState(false);
-  const [grade, setGrade] = useState(selectedStudent.grade);
 
-  const handleEditStudentClick = async () => {
+  const handleEditStudentClick = async (formData: any) => {
     try {
       const { user: guardianId } = selectedStudent;
-      
+
       await studentApi.updateStudent(selectedStudent.id!, {
         userId: guardianId,
-        name,
+        name: `${formData.firstName} ${formData.lastName}`,
+        grade: formData.grade,
         birthdate,
-        grade,
       } as Student);
       navigation.navigate("GuardianHome");
     } catch (error) {
@@ -50,23 +64,65 @@ const EditStudent = ({ navigation }: any) => {
         />
       )}
       <Text category="h6">Editar estudante</Text>
-      <Input
-        placeholder="Nome do estudante *"
-        value={name}
-        onChangeText={(name) => setName(name)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Nome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.firstName ? "danger" : "basic"}
+            caption={errors.firstName ? errors.firstName.message : ""}
+          />
+        )}
+        name="firstName"
       />
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Sobrenome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.lastName ? "danger" : "basic"}
+            caption={errors.lastName ? errors.lastName.message : ""}
+          />
+        )}
+        name="lastName"
+      />
+
       <Input
         label="Data de nascimento *"
         placeholder="dd/mm/aaaa"
         value={dateToString(birthdate, true)}
         onPress={() => setIsBirthdayModalVisible(true)}
       />
-      <Input
-        placeholder="Série *"
-        value={grade}
-        onChangeText={(grade) => setGrade(grade)}
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Série *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.grade ? "danger" : "basic"}
+            caption={errors.grade ? errors.grade.message : ""}
+          />
+        )}
+        name="grade"
       />
-      <Button accessoryLeft={EditIcon} onPress={handleEditStudentClick}>
+      <Button
+        accessoryLeft={EditIcon}
+        onPress={handleSubmit(handleEditStudentClick)}
+      >
         Confirmar edição
       </Button>
     </View>

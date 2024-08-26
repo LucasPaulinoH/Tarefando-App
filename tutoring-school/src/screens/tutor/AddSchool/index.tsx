@@ -1,31 +1,39 @@
 import { ScrollView, View } from "react-native";
-import {
-  Text,
-  Input,
-  Button,
-  Avatar,
-} from "@ui-kitten/components";
+import { Text, Input, Button, Avatar } from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
 import MaskInput from "react-native-mask-input";
 import { useEffect, useState } from "react";
 import { fetchCep } from "../../../utils/cep";
 import schoolApi from "../../../services/School";
-import { CEP_MASK, PHONE_MASK } from "../../../utils/masks";
+import { CEP_MASK } from "../../../utils/masks";
 import { School } from "../../../services/School/type";
 import { AddIcon } from "../../../theme/Icons";
 import {
   handleSetSingleSelectedImageState,
   uploadImageToFirebase,
 } from "../../../utils/imageFunctions";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { schoolValidationSchema } from "../../../validations/school";
 
 const AddSchool = ({ navigation }: any) => {
   const { authState } = useAuth();
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schoolValidationSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+    },
+  });
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
 
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState("");
@@ -36,23 +44,23 @@ const AddSchool = ({ navigation }: any) => {
 
   const [isCepFilled, setIsCepFilled] = useState(false);
 
-  const handleAddSchoolClick = async () => {
+  const handleAddSchoolClick = async (formData: any) => {
     try {
       const userId = authState?.user!.id!;
 
       const newSchool: School = {
         userId,
-        name,
+        name: formData.name,
         description,
-        phone,
-        email,
+        phone: formData.phone,
+        email: formData.email,
         cep,
         address,
         addressNumber,
         district,
         city,
         state,
-        profileImage: null
+        profileImage: null,
       };
 
       const createdSchool = await schoolApi.createSchool(newSchool);
@@ -106,10 +114,22 @@ const AddSchool = ({ navigation }: any) => {
           <Text>Limpar</Text>
         </Button>
       </View>
-      <Input
-        placeholder="Nome da escola *"
-        value={name}
-        onChangeText={(name) => setName(name)}
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Nome *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.name ? "danger" : "basic"}
+            caption={errors.name ? errors.name.message : ""}
+          />
+        )}
+        name="name"
       />
       <Input
         placeholder="Descrição"
@@ -118,17 +138,38 @@ const AddSchool = ({ navigation }: any) => {
         value={description}
         onChangeText={(description) => setDescription(description)}
       />
-      <MaskInput
-        mask={PHONE_MASK}
-        value={phone}
-        onChangeText={(phone) => setPhone(phone)}
-        placeholder="Telefone (contato) *"
-        keyboardType="numeric"
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Email *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.email ? "danger" : "basic"}
+            caption={errors.email ? errors.email.message : ""}
+          />
+        )}
+        name="email"
       />
-      <Input
-        placeholder="Email (contato) *"
-        value={email}
-        onChangeText={(email) => setEmail(email)}
+
+      <Controller
+        control={control}
+        rules={{
+          required: true,
+        }}
+        render={({ field: { onChange, value } }) => (
+          <Input
+            placeholder="Telefone (contato) *"
+            value={value}
+            onChangeText={onChange}
+            status={errors.phone ? "danger" : "basic"}
+            caption={errors.phone ? errors.phone.message : ""}
+          />
+        )}
+        name="phone"
       />
       <MaskInput
         mask={CEP_MASK}
@@ -166,7 +207,10 @@ const AddSchool = ({ navigation }: any) => {
         onChangeText={(state) => setState(state)}
         disabled={isCepFilled}
       />
-      <Button accessoryLeft={AddIcon} onPress={handleAddSchoolClick}>
+      <Button
+        accessoryLeft={AddIcon}
+        onPress={handleSubmit(handleAddSchoolClick)}
+      >
         Adicionar escola
       </Button>
     </ScrollView>
