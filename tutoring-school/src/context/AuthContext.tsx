@@ -30,28 +30,28 @@ export const AuthProvider = ({ children }: any) => {
     user: User | null;
   }>({ token: null, authenticated: null, user: null });
 
-  // useEffect(() => {
-  //   SecureStore.getItemAsync("TOKEN_KEY").then((recoveredToken) => {
-  //     axios.defaults.headers.Authorization = null;
+  useEffect(() => {
+    SecureStore.getItemAsync("TOKEN_KEY").then((recoveredToken) => {
+      axios.defaults.headers.Authorization = null;
 
-  //     if (recoveredToken) {
-  //       axios.defaults.headers.Authorization = recoveredToken;
-  //       const loggedUserId = jwtDecode(recoveredToken).id;
+      if (recoveredToken) {
+        axios.defaults.headers.Authorization = recoveredToken;
+        const loggedUserId = jwtDecode(recoveredToken).id;
 
-  //       userApi.getUser(loggedUserId).then((loggedUser) => {
-  //         setAuthState({
-  //           token: recoveredToken,
-  //           authenticated: true,
-  //           user: loggedUser,
-  //         });
-  //       });
-  //     }
+        userApi.getUser(loggedUserId).then((loggedUser) => {
+          setAuthState({
+            token: recoveredToken,
+            authenticated: true,
+            user: loggedUser,
+          });
+        });
+      }
 
-  //     if (!recoveredToken) {
-  //       setAuthState({ token: null, authenticated: false, user: null });
-  //     }
-  //   });
-  // }, []);
+      if (!recoveredToken) {
+        setAuthState({ token: null, authenticated: false, user: null });
+      }
+    });
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input, Text } from "@ui-kitten/components";
+import { Button, Input, Text, useTheme } from "@ui-kitten/components";
 import { View } from "react-native";
 import { EditIcon } from "../../../theme/Icons";
 import { Student } from "../../../services/Student/type";
@@ -10,8 +10,11 @@ import { dateToString } from "../../../utils/stringUtils";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { studentValidationSchema } from "../../../validations/student";
+import { styles } from "../studentScreenStyles";
 
 const EditStudent = ({ navigation }: any) => {
+  const theme = useTheme();
+  
   const selectedStudent: Student = JSON.parse(
     SecureStore.getItem("selectedStudent")!
   );
@@ -51,80 +54,82 @@ const EditStudent = ({ navigation }: any) => {
   };
 
   return (
-    <View>
-      {isBirthdayModalVisible && (
-        <DateTimePicker
-          mode="date"
-          display="spinner"
-          value={birthdate}
-          onChange={(_: any, selectedDate: Date) => {
-            setBirthdate(selectedDate);
-            setIsBirthdayModalVisible(false);
+    <View style={{ backgroundColor: theme["color-primary-100"] }}>
+      <View style={styles.mainContent}>
+        {isBirthdayModalVisible && (
+          <DateTimePicker
+            mode="date"
+            display="spinner"
+            value={birthdate}
+            onChange={(_: any, selectedDate: Date) => {
+              setBirthdate(selectedDate);
+              setIsBirthdayModalVisible(false);
+            }}
+          />
+        )}
+        <Text category="h6">Editar estudante</Text>
+        <Controller
+          control={control}
+          rules={{
+            required: true,
           }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Nome *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.firstName ? "danger" : "basic"}
+              caption={errors.firstName ? errors.firstName.message : ""}
+            />
+          )}
+          name="firstName"
         />
-      )}
-      <Text category="h6">Editar estudante</Text>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Nome *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.firstName ? "danger" : "basic"}
-            caption={errors.firstName ? errors.firstName.message : ""}
-          />
-        )}
-        name="firstName"
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Sobrenome *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.lastName ? "danger" : "basic"}
-            caption={errors.lastName ? errors.lastName.message : ""}
-          />
-        )}
-        name="lastName"
-      />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Sobrenome *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.lastName ? "danger" : "basic"}
+              caption={errors.lastName ? errors.lastName.message : ""}
+            />
+          )}
+          name="lastName"
+        />
 
-      <Input
-        label="Data de nascimento *"
-        placeholder="dd/mm/aaaa"
-        value={dateToString(birthdate, true)}
-        onPress={() => setIsBirthdayModalVisible(true)}
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Série *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.grade ? "danger" : "basic"}
-            caption={errors.grade ? errors.grade.message : ""}
-          />
-        )}
-        name="grade"
-      />
-      <Button
-        accessoryLeft={EditIcon}
-        onPress={handleSubmit(handleEditStudentClick)}
-      >
-        Confirmar edição
-      </Button>
+        <Input
+          label="Data de nascimento *"
+          placeholder="dd/mm/aaaa"
+          value={dateToString(birthdate, true)}
+          onPress={() => setIsBirthdayModalVisible(true)}
+        />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Série *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.grade ? "danger" : "basic"}
+              caption={errors.grade ? errors.grade.message : ""}
+            />
+          )}
+          name="grade"
+        />
+        <Button
+          accessoryLeft={EditIcon}
+          onPress={handleSubmit(handleEditStudentClick)}
+        >
+          Confirmar edição
+        </Button>
+      </View>
     </View>
   );
 };

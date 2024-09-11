@@ -26,6 +26,11 @@ const studentApi = {
     axios
       .put(`${CONTROLLER_URL}/${studentId}`, updatedStudent)
       .then((response) => response.data),
+  checkStudentLinkValidity: (studentId: string) =>
+    axios
+      .post(`${CONTROLLER_URL}/check-student-link/${studentId}`)
+      .then((response) => response.data),
+
   unlinkStudentFromSchool: (studentId: string): Promise<Student> =>
     axios
       .patch(`${CONTROLLER_URL}/unlink-from-school/${studentId}`)
@@ -37,6 +42,7 @@ const studentApi = {
     axios
       .patch(`${CONTROLLER_URL}/link-to-school/${studentId}/${schoolId}`)
       .then((response) => response.data),
+
   deleteStudent: (studentId: string): Promise<void> =>
     axios
       .delete(`${CONTROLLER_URL}/${studentId}`)

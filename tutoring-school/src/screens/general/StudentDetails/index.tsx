@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, Image, ActivityIndicator } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Student } from "../../../services/Student/type";
 import {
@@ -8,6 +8,7 @@ import {
   Input,
   Modal,
   Text,
+  useTheme,
 } from "@ui-kitten/components";
 import {
   AddIcon,
@@ -18,7 +19,6 @@ import {
   UnlinkSchoolIcon,
 } from "../../../theme/Icons";
 import TaskStatusChip from "../../../components/TaskStatusChip";
-import styles from "./styles";
 import { Subject } from "../../../services/Subject/type";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -39,13 +39,18 @@ import userApi from "../../../services/User";
 import { UserCard } from "../../../services/User/type";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 import GenericModal from "../../../components/GenericModal";
+import { StyleSheet } from "react-native";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
 
+  const theme = useTheme();
+
   const { authState } = useAuth();
+
+  const [loading, setLoading] = useState(false);
   const [wantsToScanLinkingCode, setWantsToScanLinkingCode] = useState(false);
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -80,10 +85,23 @@ const StudentDetails = ({ navigation }: any) => {
   const fetchStudentDetails = async () => {
     try {
       const studentResponse = await studentApi.getStudent(selectedStudentId);
+
       setStudent(studentResponse);
       setTasks(studentResponse.tasks!);
     } catch (error) {
-      console.log("Error fetching user details: ", error);
+      console.error("Error fetching user details: ", error);
+    }
+  };
+
+  const checkSchoolarLink = async () => {
+    try {
+      const isSchoolValidResponse = await studentApi.checkStudentLinkValidity(
+        student.id!
+      );
+
+      if (!isSchoolValidResponse) fetchStudentDetails()
+    } catch (error) {
+      console.error("Error checking schoolar link: ", error.response.data);
     }
   };
 
@@ -141,7 +159,7 @@ const StudentDetails = ({ navigation }: any) => {
   };
 
   const handleSchoolClick = () => {
-    SecureStore.setItem("selectedSchool", JSON.stringify(school));
+    SecureStore.setItem("selectedSchoolId", JSON.stringify(school.id));
     navigation.navigate("SchoolDetails");
   };
 
@@ -188,6 +206,10 @@ const StudentDetails = ({ navigation }: any) => {
       fetchStudentDetails();
     }, [])
   );
+
+  useEffect(() => {
+    checkSchoolarLink();
+  }, [student]);
 
   const isUserTutor = () => {
     return authState?.user?.role === UserRole.TUTOR;
@@ -255,192 +277,360 @@ const StudentDetails = ({ navigation }: any) => {
   );
 
   return (
-    <ScrollView>
-      {deleteTaskConfirmationModal}
-      <Text category="h5">{student!.name}</Text>
-      <Text category="s1" style={{ textAlign: "justify" }}>
-        {`${showStudentAgeString(
-          calculateAge(new Date(student!.birthdate))
-        )}, ${student!.grade}`}
-      </Text>
-      {student.schoolId ? (
-        <>
-          {!isUserTutor() ? (
-            <>
-              <Text category="h6">Vinculado à:</Text>
-              <Card onPress={handleSchoolClick}>
-                <View style={styles.schoolCard}>
-                  <View style={styles.schoolCardFirstHalf}>
-                    <Avatar
-                      size="giant"
-                      src={school.profileImage}
-                      style={styles.schoolAvatar}
-                    />
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      <View style={styles.mainContent}>
+        {deleteTaskConfirmationModal}
+        {!loading ? (
+          <>
+            <View style={styles.studentInfo}>
+              <Text category="h5">{student!.name}</Text>
+              <Text category="s1" style={{ textAlign: "justify" }}>
+                {`${showStudentAgeString(
+                  calculateAge(new Date(student!.birthdate))
+                )}, ${student!.grade}`}
+              </Text>
+            </View>
+            {student.schoolId ? (
+              <>
+                {!isUserTutor() ? (
+                  <>
+                    <Text category="h6">Vinculado à:</Text>
+                    <Card onPress={handleSchoolClick}>
+                      <View style={styles.schoolCard}>
+                        <View style={styles.schoolCardFirstHalf}>
+                          <Avatar
+                            size="giant"
+                            src={school.profileImage}
+                            style={styles.schoolAvatar}
+                          />
 
-                    <View>
-                      <Text category="h6">{school.name ?? "..."}</Text>
-                      <Text>{`${shortenLargeTexts(
-                        `${school.district}`,
-                        20
-                      )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
-                    </View>
-                  </View>
+                          <View>
+                            <Text category="h6">{school.name ?? "..."}</Text>
+                            <Text>{`${shortenLargeTexts(
+                              `${school.district}`,
+                              20
+                            )}, ${shortenLargeTexts(
+                              `${school.city}`,
+                              20
+                            )}`}</Text>
+                          </View>
+                        </View>
 
-                  <View>
-                    <Button
-                      accessoryLeft={UnlinkSchoolIcon}
-                      onPress={handleUnlinkFromSchool}
-                      appearance="ghost"
-                    />
-                  </View>
-                </View>
-              </Card>
-            </>
-          ) : (
-            <>
-              <Card>
-                <View style={styles.schoolCard}>
-                  <View style={styles.schoolCardFirstHalf}>
-                    <Avatar
-                      size="giant"
-                      src={guardianCard.profileImage}
-                      style={styles.schoolAvatar}
-                    />
-
-                    <View>
-                      <Text category="h6">{guardianCard.userName}</Text>
-                      <Text>Responsável</Text>
-                    </View>
-                  </View>
-                </View>
-              </Card>
-            </>
-          )}
-          <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
-            Adicionar atividade
-          </Button>
-          {student.tasks!.length > 0 ? (
-            <Input
-              placeholder="Buscar atividade..."
-              accessoryLeft={SearchIcon}
-              value={searchTerm}
-              onChangeText={(search) => setSearchTerm(search)}
-            />
-          ) : null}
-
-          {filteredTasks.map((task) => (
-            <Card
-              key={task.id}
-              onPress={() => {
-                handleTaskDetailsClick(task.id!);
-              }}
-            >
-              <View style={styles.taskCard}>
-                <View>
-                  <Text category="h6">{task.title}</Text>
-                  <Text category="s1">
-                    {subjects.find((subject) => subject.id === task.subjectId)
-                      ?.name || "Carregando..."}
-                  </Text>
-                </View>
-
-                <View style={styles.taskCardSecondHalf}>
-                  <TaskStatusChip
-                    deadlineDate={task.deadlineDate}
-                    isConcluded={task.concluded!}
-                  />
-                  <Button
-                    accessoryLeft={MoreOptionsVerticalIcon}
-                    style={styles.moreOptionsButton}
-                    appearance="outline"
-                    onPress={() => handleMoreOptionsClick(task)}
-                  />
-                  <Modal
-                    visible={moreOptionsVisible}
-                    backdropStyle={styles.moreOptionsModal}
-                    onBackdropPress={() => setMoreOptionsVisible(false)}
-                  >
-                    <Card disabled={true}>
-                      <View style={styles.modalCard}>
-                        <Text>{selectedTask.title}</Text>
-                        <Button
-                          accessoryLeft={EditIcon}
-                          onPress={() => handleEditTaskClick(task)}
-                        >
-                          Editar tarefa
-                        </Button>
-                        <Button
-                          accessoryLeft={DeleteIcon}
-                          onPress={() => {
-                            handleSelectTaskForDeletion(selectedTask.id!);
-                          }}
-                        >
-                          Excluir tarefa
-                        </Button>
+                        <View>
+                          <Button
+                            accessoryLeft={UnlinkSchoolIcon}
+                            onPress={handleUnlinkFromSchool}
+                            appearance="ghost"
+                          />
+                        </View>
                       </View>
                     </Card>
-                  </Modal>
+                  </>
+                ) : (
+                  <>
+                    <Card>
+                      <View style={styles.schoolCard}>
+                        <View style={styles.schoolCardFirstHalf}>
+                          <Avatar
+                            size="giant"
+                            src={guardianCard.profileImage}
+                            style={styles.schoolAvatar}
+                          />
+
+                          <View>
+                            <Text category="h6">{guardianCard.userName}</Text>
+                            <Text>Responsável</Text>
+                          </View>
+                        </View>
+                      </View>
+                    </Card>
+                  </>
+                )}
+                <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
+                  Adicionar atividade
+                </Button>
+                {student.tasks!.length > 0 ? (
+                  <Input
+                    placeholder="Buscar atividade..."
+                    accessoryLeft={SearchIcon}
+                    value={searchTerm}
+                    onChangeText={(search) => setSearchTerm(search)}
+                  />
+                ) : null}
+
+                {filteredTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    onPress={() => {
+                      handleTaskDetailsClick(task.id!);
+                    }}
+                  >
+                    <View style={styles.taskCard}>
+                      <View>
+                        <Text category="h6">{task.title}</Text>
+                        <Text category="s1">
+                          {subjects.find(
+                            (subject) => subject.id === task.subjectId
+                          )?.name || "Carregando..."}
+                        </Text>
+                      </View>
+
+                      <View style={styles.taskCardSecondHalf}>
+                        <TaskStatusChip
+                          deadlineDate={task.deadlineDate}
+                          isConcluded={task.concluded!}
+                        />
+                        <Button
+                          accessoryLeft={MoreOptionsVerticalIcon}
+                          style={styles.moreOptionsButton}
+                          appearance="outline"
+                          onPress={() => handleMoreOptionsClick(task)}
+                        />
+                        <Modal
+                          visible={moreOptionsVisible}
+                          backdropStyle={styles.moreOptionsModal}
+                          onBackdropPress={() => setMoreOptionsVisible(false)}
+                        >
+                          <Card disabled={true}>
+                            <View style={styles.modalCard}>
+                              <Text>{selectedTask.title}</Text>
+                              <Button
+                                accessoryLeft={EditIcon}
+                                onPress={() => handleEditTaskClick(task)}
+                              >
+                                Editar tarefa
+                              </Button>
+                              <Button
+                                accessoryLeft={DeleteIcon}
+                                onPress={() => {
+                                  handleSelectTaskForDeletion(selectedTask.id!);
+                                }}
+                              >
+                                Excluir tarefa
+                              </Button>
+                            </View>
+                          </Card>
+                        </Modal>
+                      </View>
+                    </View>
+                  </Card>
+                ))}
+              </>
+            ) : isUserTutor() ? null : !cameraPermission ? (
+              <></>
+            ) : !cameraPermission.granted ? (
+              <View>
+                <Button onPress={requestCameraPermission}>
+                  <Text></Text>
+                </Button>
+              </View>
+            ) : !wantsToScanLinkingCode ? (
+              <View
+                style={{
+                  ...styles.studentInfo,
+                  gap: 175,
+                  marginTop: 80,
+                }}
+              >
+                <View
+                  style={{
+                    ...styles.studentInfo,
+                    width: "70%",
+                  }}
+                >
+                  <Image
+                    source={require("../../../../assets/notLinkedToSchool.png")}
+                    style={styles.image}
+                  />
+                  <Text
+                    style={{ textAlign: "center", marginTop: -20 }}
+                    category="h6"
+                  >
+                    Este aluno ainda não está vinculado a nenhuma escola!
+                  </Text>
+                </View>
+                <Button
+                  onPress={() => setWantsToScanLinkingCode(true)}
+                  style={{ ...styles.buttons, marginTop: 20 }}
+                >
+                  <Text>Escanear código de vinculação</Text>
+                </Button>
+              </View>
+            ) : !isScannedSchoolIdValid ? (
+              <View style={{ ...styles.studentInfo, marginTop: 20, gap: 20 }}>
+                <Text category="h6">Escaneie o QR para vincular aluno</Text>
+                <CameraView
+                  style={styles.cameraContainer}
+                  facing="back"
+                  barcodeScannerSettings={{
+                    barcodeTypes: ["qr"],
+                  }}
+                  onBarcodeScanned={(value) => setReadCode(value.raw!)}
+                >
+                  <View
+                    style={{
+                      ...styles.cameraScanningArea,
+                      borderColor: theme["color-primary-400"],
+                    }}
+                  />
+                </CameraView>
+                <Button
+                  onPress={() => {
+                    setWantsToScanLinkingCode(false);
+                  }}
+                  appearance="ghost"
+                  style={{ width: "100%" }}
+                >
+                  <Text>Cancelar</Text>
+                </Button>
+              </View>
+            ) : (
+              <View
+                style={{
+                  ...styles.studentInfo,
+                  marginTop: 20,
+                  gap: 30,
+                  width: "100%",
+                }}
+              >
+                <Text category="h6">
+                  {`Deseja vincular à `}
+                  <Text
+                    category="h6"
+                    style={{ color: theme["color-primary-500"] }}
+                  >
+                    {foundedSchool.name ?? "..."}
+                  </Text>
+                  ?
+                </Text>
+                <View style={styles.buttons}>
+                  <Button
+                    onPress={handleLinkStudentToSchool}
+                    style={styles.buttons}
+                  >
+                    <Text>Sim</Text>
+                  </Button>
+                  <Button
+                    onPress={() => {
+                      setIsScannedSchoolIdValid(false);
+                      setWantsToScanLinkingCode(false);
+                      setReadCode("");
+                      setFoundedSchool({} as School);
+                    }}
+                    appearance="ghost"
+                    style={styles.buttons}
+                  >
+                    <Text>Cancelar</Text>
+                  </Button>
                 </View>
               </View>
-            </Card>
-          ))}
-        </>
-      ) : isUserTutor() ? null : !cameraPermission ? (
-        <></>
-      ) : !cameraPermission.granted ? (
-        <View>
-          <Button onPress={requestCameraPermission}>
-            <Text></Text>
-          </Button>
-        </View>
-      ) : !wantsToScanLinkingCode ? (
-        <View>
-          <Button onPress={() => setWantsToScanLinkingCode(true)}>
-            <Text>Escanear código de vinculação</Text>
-          </Button>
-        </View>
-      ) : !isScannedSchoolIdValid ? (
-        <>
-          <CameraView
-            style={{ width: 400, height: 400 }}
-            facing="back"
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr"],
-            }}
-            onBarcodeScanned={(value) => setReadCode(value.raw!)}
-          />
-          <Button
-            onPress={() => {
-              setWantsToScanLinkingCode(false);
-            }}
-            appearance="outline"
-          >
-            <Text>Cancelar</Text>
-          </Button>
-        </>
-      ) : (
-        <View>
-          <Text category="h6">{`Deseja vincular ${student.name} à ${
-            foundedSchool.name ?? "..."
-          }?`}</Text>
-          <Button onPress={handleLinkStudentToSchool}>
-            <Text>Sim</Text>
-          </Button>
-          <Button
-            onPress={() => {
-              setIsScannedSchoolIdValid(false);
-              setWantsToScanLinkingCode(false);
-              setReadCode("");
-              setFoundedSchool({} as School);
-            }}
-            appearance="outline"
-          >
-            <Text>Cancelar</Text>
-          </Button>
-        </View>
-      )}
+            )}
+          </>
+        ) : (
+          <View>
+            <ActivityIndicator
+              size="large"
+              color={theme["color-primary-500"]}
+            />
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
 };
 
 export default StudentDetails;
+
+const styles = StyleSheet.create({
+  mainContent: {
+    width: "100%",
+    height: "100%",
+    marginTop: 20,
+    paddingLeft: 15,
+    paddingRight: 15,
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
+  },
+
+  studentInfo: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  buttons: {
+    width: "100%",
+  },
+
+  cameraContainer: {
+    width: "100%",
+    height: 400,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  cameraScanningArea: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderRadius: 15,
+  },
+
+  image: {
+    width: 250,
+    height: 250,
+    resizeMode: "contain",
+  },
+
+  taskCard: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  taskCardSecondHalf: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+
+  moreOptionsButton: {
+    width: 10,
+    height: 10,
+    margin: 0,
+    padding: 0,
+  },
+
+  moreOptionsModal: {
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+
+  modalCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+
+  schoolCard: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  schoolCardFirstHalf: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  schoolAvatar: {
+    borderRadius: 5,
+  },
+});

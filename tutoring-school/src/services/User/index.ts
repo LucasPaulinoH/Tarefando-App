@@ -22,7 +22,7 @@ const userApi = {
     axios
       .put(`${CONTROLLER_URL}/${userId}`, updatedUser)
       .then((response) => response.data),
-  updateUserProfileImage: (id: string, url: string) =>
+  updateUserProfileImage: (id: string, url: string | null) =>
     axios
       .patch(`${CONTROLLER_URL}/profile-image`, { id, url })
       .then((response) => response.data),

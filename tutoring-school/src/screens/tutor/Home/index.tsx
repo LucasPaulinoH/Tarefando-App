@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { School } from "../../../services/School/type";
 import { useAuth } from "../../../context/AuthContext";
 import schoolApi from "../../../services/School";
@@ -10,8 +10,9 @@ import {
   Card,
   Input,
   Text,
+  useTheme,
 } from "@ui-kitten/components";
-import styles from "./styles";
+import { StyleSheet } from "react-native";
 import { shortenLargeTexts } from "../../../utils/stringUtils";
 import * as SecureStore from "expo-secure-store";
 import { useFocusEffect } from "@react-navigation/native";
@@ -27,6 +28,8 @@ import GenericModal from "../../../components/GenericModal";
 
 const TutorHome = ({ navigation }: any) => {
   const { authState } = useAuth();
+
+  const theme = useTheme();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ownedSchools, setOwnedSchools] = useState<School[]>([]);
@@ -138,64 +141,130 @@ const TutorHome = ({ navigation }: any) => {
   );
 
   return (
-    <View>
-      {deleteSchoolConfirmationModal}
-      <Button
-        accessoryLeft={AddIcon}
-        onPress={() => navigation.navigate("AddSchool")}
-      >
-        Adicionar escola
-      </Button>
-      <Input
-        placeholder="Pesquise uma escola..."
-        accessoryLeft={SearchIcon}
-        value={searchTerm}
-        onChangeText={(search) => setSearchTerm(search)}
-      />
-      {filteredSchools.map((school: School) => (
-        <Card
-          key={school.id}
-          onPress={() => handleSchoolDetailsClick(school.id!)}
-        >
-          <View style={styles.schoolCard}>
-            <View style={styles.schoolCardFirstHalf}>
-              <Avatar
-                size="giant"
-                src={school.profileImage}
-                style={styles.schoolAvatar}
-              />
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      <View style={styles.mainContent}>
+        {deleteSchoolConfirmationModal}
 
-              <View>
-                <Text category="h6">{school.name}</Text>
-                <Text>{`${shortenLargeTexts(
-                  `${school.district}`,
-                  20
-                )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
-              </View>
-            </View>
+        <View style={styles.addAndSearchBarContainer}>
+          <Button
+            accessoryLeft={AddIcon}
+            onPress={() => navigation.navigate("AddSchool")}
+            style={{ width: "100%" }}
+          >
+            Adicionar escola
+          </Button>
+          {ownedSchools.length > 0 ? (
+            <Input
+              placeholder="Pesquise uma escola..."
+              accessoryLeft={SearchIcon}
+              value={searchTerm}
+              onChangeText={(search) => setSearchTerm(search)}
+            />
+          ) : null}
+        </View>
 
-            <View>
-              <ButtonGroup appearance="ghost">
-                <Button
-                  accessoryLeft={EditIcon}
-                  onPress={() => handleEditSchoolClick(school)}
-                />
-                <Button
-                  accessoryLeft={DeleteIcon}
-                  onPress={() =>
-                    handleSelectSchoolForDeletion(
-                      school.id!,
-                      school.profileImage!
-                    )
-                  }
-                />
-              </ButtonGroup>
-            </View>
+        {filteredSchools.length > 0 ? (
+          <ScrollView style={styles.schoolListContainer}>
+            {filteredSchools.map((school: School) => (
+              <Card
+                key={school.id}
+                onPress={() => handleSchoolDetailsClick(school.id!)}
+              >
+                <View style={styles.schoolCard}>
+                  <View style={styles.schoolCardFirstHalf}>
+                    <Avatar
+                      size="giant"
+                      src={school.profileImage!}
+                      style={styles.schoolAvatar}
+                    />
+
+                    <View>
+                      <Text category="h6">{school.name}</Text>
+                      <Text>{`${shortenLargeTexts(
+                        `${school.district}`,
+                        20
+                      )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
+                    </View>
+                  </View>
+
+                  <View>
+                    <ButtonGroup appearance="ghost">
+                      <Button
+                        accessoryLeft={EditIcon}
+                        onPress={() => handleEditSchoolClick(school)}
+                      />
+                      <Button
+                        accessoryLeft={DeleteIcon}
+                        onPress={() =>
+                          handleSelectSchoolForDeletion(
+                            school.id!,
+                            school.profileImage!
+                          )
+                        }
+                      />
+                    </ButtonGroup>
+                  </View>
+                </View>
+              </Card>
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.noSchoolsContainer}>
+            <Text>Não há escolas cadastrados.</Text>
           </View>
-        </Card>
-      ))}
-    </View>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 export default TutorHome;
+
+const styles = StyleSheet.create({
+  schoolCard: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  addAndSearchBarContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 14,
+  },
+
+  schoolCardFirstHalf: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  schoolListContainer: {
+    marginTop: 25,
+    marginBottom: 20,
+  },
+
+  noSchoolsContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  schoolAvatar: {
+    borderRadius: 5,
+  },
+
+  mainContent: {
+    width: "100%",
+    height: "100%",
+    marginTop: 20,
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
+});

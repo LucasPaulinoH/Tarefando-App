@@ -1,9 +1,20 @@
 import { ScrollView, View } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
-import { Avatar, Button, Card, Input, Text } from "@ui-kitten/components";
+import {
+  Avatar,
+  Button,
+  Card,
+  Input,
+  Tab,
+  TabBar,
+  Text,
+  useTheme,
+} from "@ui-kitten/components";
 import { useEffect, useState } from "react";
 import { UserRole } from "../../../types/Types";
 import {
+  ConfirmIcon,
+  EditIcon,
   EmailIcon,
   LogoutIcon,
   PersonIcon,
@@ -26,11 +37,16 @@ import {
   passwordUpdateValidationSchema,
   userDataValidationSchema,
 } from "../../../validations/me";
+import userIcon from "../../../../assets/user.png";
+import { StyleSheet } from "react-native";
 
 const ICON_SIZE = 24;
 
+/* CORRIGIR EDIÇÃO DE IMAGENS */
 const Me = ({ navigation }: any) => {
   const { onLogout, authState } = useAuth();
+
+  const theme = useTheme();
 
   const [tabIndex, setTabIndex] = useState(0);
   const [editModeEnabled, setEditModeEnabled] = useState(false);
@@ -42,10 +58,6 @@ const Me = ({ navigation }: any) => {
   const [name, setName] = useState(authState?.user?.name);
   const email = authState?.user?.email;
   const role = authState?.user?.role as UserRole;
-
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
 
   const [isConfirmQuitVisible, setIsConfirmQuitVisible] = useState(false);
   const [isDeleteAccountVisible, setIsDeleteAccountVisible] = useState(false);
@@ -80,21 +92,28 @@ const Me = ({ navigation }: any) => {
           role,
         });
 
-        if (user?.profileImage !== profileImage) {
-          const newUpdatedImageUrl = await uploadImageToFirebase(
-            profileImage!,
+        let newUpdatedImageUrl = null;
+
+        if (user?.profileImage && profileImage)
+          newUpdatedImageUrl = await uploadImageToFirebase(
+            profileImage,
             `users/${user?.id}`
           );
 
-          await userApi.updateUserProfileImage(user?.id!, newUpdatedImageUrl);
-        }
+        if (
+          profileImage &&
+          user?.profileImage &&
+          user?.profileImage !== profileImage
+        )
+          await deleteImageFromFirebase(user?.profileImage!);
 
-        fetchUser();
+        await userApi.updateUserProfileImage(user?.id!, newUpdatedImageUrl);
       }
       setEditModeEnabled(false);
     } catch (error: any) {
       console.log("Error updating user: ", error?.response);
     }
+    fetchUser();
   };
 
   const fetchUser = async () => {
@@ -134,13 +153,13 @@ const Me = ({ navigation }: any) => {
     }
   };
 
-  const handleUpdatePasswordClick = async () => {
+  const handleUpdatePasswordClick = async (formData: any) => {
     try {
-      if (newPassword === newPasswordConfirm) {
+      if (formData.newPassword === formData.newPasswordConfirm) {
         const updatePasswordDTO = {
           id: authState?.user?.id!,
-          currentPassword,
-          newPassword,
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
         };
 
         const updatedPasswordResponse = await userApi.updateUserPassword(
@@ -157,33 +176,36 @@ const Me = ({ navigation }: any) => {
     fetchUser();
   }, []);
 
-  const confirmQuitModal = (
+  useEffect(() => {
+    if (tabIndex === 0) {
+      setProfileImage(null);
+      fetchUser();
+    }
+  }, [tabIndex]);
+
+  const confirmExitModal = (
     <GenericModal
       isVisible={isConfirmQuitVisible}
       setIsVisible={setIsConfirmQuitVisible}
     >
       <Card disabled={true}>
-        <Button
-          accessoryLeft={UnlinkSchoolIcon}
-          onPress={() => setIsConfirmQuitVisible(false)}
-          appearance="ghost"
-        />
-        <Text>Tem certeza que deseja sair?</Text>
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button onPress={onLogout}>Sim</Button>
+        <View style={styles.exitModal}>
           <Button
-            appearance="outline"
+            style={styles.exitModalCloseButton}
+            accessoryLeft={UnlinkSchoolIcon}
             onPress={() => setIsConfirmQuitVisible(false)}
-          >
-            Não
-          </Button>
+            appearance="ghost"
+          />
+          <Text>Tem certeza que deseja sair?</Text>
+          <View style={styles.exitModalOptionsContainer}>
+            <Button onPress={onLogout}>Sim</Button>
+            <Button
+              appearance="ghost"
+              onPress={() => setIsConfirmQuitVisible(false)}
+            >
+              Não
+            </Button>
+          </View>
         </View>
       </Card>
     </GenericModal>
@@ -228,30 +250,37 @@ const Me = ({ navigation }: any) => {
   );
 
   return (
-    <ScrollView>
-      {confirmQuitModal}
+    <ScrollView style={styles.mainContainer}>
+      {confirmExitModal}
       {deleteAccountModal}
-      <View style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-        <Button onPress={() => setTabIndex(0)}>
-          <Text>Meu perfil</Text>
-        </Button>
-        <Button onPress={() => setTabIndex(1)}>
-          <Text>Alterar senha</Text>
-        </Button>
-      </View>
+      <TabBar
+        selectedIndex={tabIndex}
+        onSelect={(index) => {
+          setTabIndex(index);
+          if (index === 1) setEditModeEnabled(false);
+        }}
+      >
+        <Tab title="Meu perfil" />
+        <Tab title="Alterar senha" />
+      </TabBar>
       {tabIndex === 0 ? (
-        <>
-          <Text category="h6">Dados do perfil</Text>
-          {!editModeEnabled ? (
-            <Button onPress={() => setEditModeEnabled(!editModeEnabled)}>
-              <Text>Editar informações do perfil</Text>
-            </Button>
-          ) : null}
+        <View style={styles.tabContentContainer}>
+          <View style={styles.editUserDataHeader}>
+            <Text category="h6">Dados do perfil</Text>
+            {!editModeEnabled ? (
+              <Button
+                onPress={() => setEditModeEnabled(!editModeEnabled)}
+                accessoryLeft={EditIcon}
+                appearance="ghost"
+              />
+            ) : null}
+          </View>
           <Avatar
-            style={{ width: 150, height: 150 }}
+            style={styles.userAvatar}
             size="giant"
-            source={{ uri: profileImage! }}
+            source={profileImage ? { uri: profileImage } : userIcon}
           />
+
           {editModeEnabled ? (
             <>
               <View>
@@ -259,15 +288,25 @@ const Me = ({ navigation }: any) => {
                   onPress={() =>
                     handleSetSingleSelectedImageState(setProfileImage)
                   }
-                >
-                  <Text>Alterar foto de perfil</Text>
-                </Button>
+                  accessoryLeft={EditIcon}
+                  style={styles.editImageButton}
+                />
+              </View>
+              <View style={styles.clearImageButton}>
+                {profileImage ? (
+                  <Button
+                    onPress={() => setProfileImage(null)}
+                    appearance="ghost"
+                  >
+                    <Text>Limpar imagem</Text>
+                  </Button>
+                ) : null}
                 {profileImage !== user?.profileImage ? (
                   <Button
                     onPress={() =>
                       setProfileImage(authState?.user?.profileImage!)
                     }
-                    appearance="outline"
+                    appearance="ghost"
                   >
                     <Text>Cancelar</Text>
                   </Button>
@@ -350,55 +389,71 @@ const Me = ({ navigation }: any) => {
                 name="phone"
               />
 
-              <Button onPress={handleSubmit(handleUserUpdateClick)}>
-                <Text>Confirmar alterações</Text>
-              </Button>
-              <Button
-                onPress={() => setEditModeEnabled(false)}
-                appearance="outline"
-              >
-                <Text>Cancelar</Text>
-              </Button>
+              <View>
+                <Button
+                  onPress={handleSubmit(handleUserUpdateClick)}
+                  accessoryLeft={ConfirmIcon}
+                >
+                  <Text>Confirmar alterações</Text>
+                </Button>
+                <Button
+                  onPress={() => setEditModeEnabled(false)}
+                  appearance="ghost"
+                >
+                  <Text>Cancelar</Text>
+                </Button>
+              </View>
             </>
           ) : (
             <>
-              <View>
-                <PersonIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+              <View style={styles.userInfoContainer}>
+                <PersonIcon
+                  style={styles.userInfoIcon}
+                  fill={theme["color-primary-900"]}
+                />
                 <Text>{`${user?.name} (${
                   user?.role === UserRole.GUARDIAN
                     ? "Responsável"
                     : "Professor(a)"
                 })`}</Text>
               </View>
-              <View>
-                <EmailIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+              <View style={styles.userInfoContainer}>
+                <EmailIcon
+                  style={styles.userInfoIcon}
+                  fill={theme["color-primary-900"]}
+                />
                 <Text>{user?.email}</Text>
               </View>
-              <View>
-                <PhoneIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+              <View style={styles.userInfoContainer}>
+                <PhoneIcon
+                  style={styles.userInfoIcon}
+                  fill={theme["color-primary-900"]}
+                />
                 <Text>{user?.phone}</Text>
               </View>
             </>
           )}
 
-          <Button
-            appearance="outline"
-            onPress={() => setIsConfirmQuitVisible(true)}
-            accessoryLeft={LogoutIcon}
-          >
-            <Text>Sair do app</Text>
-          </Button>
+          {!editModeEnabled ? (
+            <Button
+              onPress={() => setIsConfirmQuitVisible(true)}
+              accessoryLeft={LogoutIcon}
+            >
+              <Text>Sair do app</Text>
+            </Button>
+          ) : null}
+
           {/* <Button
             appearance="outline"
             onPress={() => setIsDeleteAccountVisible(true)}
           >
             <Text>Excluir conta</Text>
           </Button> */}
-        </>
+        </View>
       ) : (
-        <>
+        <View style={styles.tabContentContainer}>
           <Text category="h6">Alterar senha</Text>
-          
+
           <Controller
             control={control}
             rules={{
@@ -458,13 +513,90 @@ const Me = ({ navigation }: any) => {
             )}
             name="confirmNewPassword"
           />
-          <Button onPress={handleSubmit(handleUpdatePasswordClick)}>
+          <Button
+            onPress={handleSubmit(handleUpdatePasswordClick)}
+            accessoryLeft={ConfirmIcon}
+          >
             <Text>Alterar senha</Text>
           </Button>
-        </>
+        </View>
       )}
     </ScrollView>
   );
 };
 
 export default Me;
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#FEECE8",
+  },
+
+  exitModal: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  exitModalCloseButton: {
+    marginTop: -22,
+    marginRight: -40,
+    alignSelf: "flex-end",
+  },
+
+  exitModalOptionsContainer: {
+    width: "100%",
+    marginTop: 20,
+  },
+
+  editUserDataHeader: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  userInfoContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  userInfoIcon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+  },
+
+  tabContentContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+    width: "100%",
+    padding: 20,
+  },
+
+  userAvatar: {
+    width: 150,
+    height: 150,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: "#F7A8B0",
+    alignSelf: "center",
+  },
+
+  clearImageButton: {
+    marginTop: -30,
+  },
+
+  editImageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    marginTop: -60,
+    marginLeft: 200,
+  },
+});

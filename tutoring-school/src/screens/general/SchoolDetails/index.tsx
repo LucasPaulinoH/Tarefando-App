@@ -1,8 +1,14 @@
-import { View, Image } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import { School } from "../../../services/School/type";
 import * as SecureStore from "expo-secure-store";
-import { Button, Card, Icon, Input, Text } from "@ui-kitten/components";
-import styles from "./styles";
+import {
+  Button,
+  Card,
+  Icon,
+  Input,
+  Text,
+  useTheme,
+} from "@ui-kitten/components";
 import QRCode from "react-native-qrcode-svg";
 import { useEffect, useState } from "react";
 import schoolApi from "../../../services/School";
@@ -11,18 +17,23 @@ import studentApi from "../../../services/Student";
 import { SearchIcon, UnlinkSchoolIcon } from "../../../theme/Icons";
 import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
+import { StyleSheet } from "react-native";
+import GenericModal from "../../../components/GenericModal";
 
-const TutorSchoolDetails = ({ navigation }: any) => {
+const SchoolDetails = ({ navigation }: any) => {
   const selectedSchoolId: string = JSON.parse(
     SecureStore.getItem("selectedSchoolId")!
   );
 
+  const theme = useTheme();
   const { authState } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const [school, setSchool] = useState<School>({} as School);
   const [students, setStudents] = useState<Student[]>([]);
+
+  const [showQr, setShowQr] = useState(false);
 
   const fetchSchool = async () => {
     try {
@@ -74,68 +85,207 @@ const TutorSchoolDetails = ({ navigation }: any) => {
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const qrCodeModal = (
+    <GenericModal isVisible={showQr} setIsVisible={setShowQr}>
+      <Card disabled={true}>
+        <Button
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setShowQr(false)}
+          appearance="ghost"
+          style={styles.qrModalCloseButton}
+        />
+        <View style={styles.qrModalContainer}>
+          <Text category="h6">Código de vinculação escolar</Text>
+          <View style={styles.qrContainer}>
+            <QRCode
+              value={school.id}
+              size={200}
+              backgroundColor={theme["color-primary-100"]}
+              color={theme["color-primary-700"]}
+            />
+          </View>
+        </View>
+      </Card>
+    </GenericModal>
+  );
+
   return (
-    <View>
-      <Image source={{ uri: school.profileImage }} width={400} height={300} />
-      <Text category="h5">{school.name}</Text>
-      <Text category="s1" style={{ textAlign: "justify" }}>
-        {school.description}
-      </Text>
-
-      <View style={styles.contactInfoContainer}>
-        <Icon name="phone-outline" style={styles.icons} />
-        <Text>{school.phone}</Text>
-      </View>
-      <View style={styles.contactInfoContainer}>
-        <Icon name="email-outline" style={styles.icons} />
-        <Text>{school.email}</Text>
-      </View>
-      <View style={styles.contactInfoContainer}>
-        <Icon name="navigation-2-outline" style={styles.icons} />
-        <Text
-          style={{ textAlign: "justify" }}
-        >{`${school.address}, ${school.addressNumber} - ${school.district}, ${school.city} - ${school.state}`}</Text>
-      </View>
-
-      {isUserTutor() ? <QRCode value={school.id} /> : null}
-      {students.length > 0 && isUserTutor() ? (
-        <>
-          <Text category="h6">Alunos desta escola</Text>
-          <Input
-            placeholder="Buscar estudantes..."
-            accessoryLeft={SearchIcon}
-            value={searchTerm}
-            onChangeText={(search) => setSearchTerm(search)}
-          />
-          {filteredStudents.map((student: Student) => (
-            <Card
-              key={student.id}
-              onPress={() => handleStudentDetailsClick(student.id!)}
-            >
-              <View style={styles.studentCard}>
-                <View style={styles.studentCardFirstHalf}>
-                  <View style={styles.studentNameAndLinked}>
-                    <Text category="h6">{student.name}</Text>
-                  </View>
-                  <View style={styles.pendentTasksIconAndLabel}></View>
-                </View>
-
-                <View>
-                  <Button
-                    accessoryLeft={UnlinkSchoolIcon}
-                    onPress={() => handleUnlinkFromSchool(student.id!)}
-                    appearance="ghost"
-                  />
-                </View>
-              </View>
-            </Card>
-          ))}
-        </>
-      ) : students.length === 0 && isUserTutor() ? (
-        <Text>Não há alunos vinculados a esta escola ainda.</Text>
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      {qrCodeModal}
+      {school.profileImage ? (
+        <Image
+          source={{ uri: school.profileImage! }}
+          style={styles.profileImage}
+        />
       ) : null}
-    </View>
+      <View style={styles.mainContent}>
+        <View>
+          <Text category="h5">{school.name}</Text>
+          <Text category="s1" style={{ textAlign: "justify" }}>
+            {school.description}
+          </Text>
+          <View style={styles.schoolData}>
+            <View style={styles.contactInfoContainer}>
+              <Icon
+                name="phone-outline"
+                style={styles.icons}
+                fill={theme["color-primary-500"]}
+              />
+              <Text>{school.phone}</Text>
+            </View>
+            <View style={styles.contactInfoContainer}>
+              <Icon
+                name="email-outline"
+                style={styles.icons}
+                fill={theme["color-primary-500"]}
+              />
+              <Text>{school.email}</Text>
+            </View>
+            <View style={styles.contactInfoContainer}>
+              <Icon
+                name="navigation-2-outline"
+                style={styles.icons}
+                fill={theme["color-primary-500"]}
+              />
+              <Text
+                style={{ textAlign: "justify" }}
+              >{`${school.address}, ${school.addressNumber} - ${school.district}, ${school.city} - ${school.state}`}</Text>
+            </View>
+          </View>
+
+          {isUserTutor() ? (
+            <Button onPress={() => setShowQr(true)}>
+              Exibir código de vinculação
+            </Button>
+          ) : null}
+
+          {students.length > 0 && isUserTutor() ? (
+            <View>
+              <Text category="h6">Alunos desta escola</Text>
+              <Input
+                placeholder="Buscar estudantes..."
+                accessoryLeft={SearchIcon}
+                value={searchTerm}
+                onChangeText={(search) => setSearchTerm(search)}
+              />
+              {filteredStudents.map((student: Student) => (
+                <Card
+                  key={student.id}
+                  onPress={() => handleStudentDetailsClick(student.id!)}
+                >
+                  <View style={styles.studentCard}>
+                    <View style={styles.studentCardFirstHalf}>
+                      <View style={styles.studentNameAndLinked}>
+                        <Text category="h6">{student.name}</Text>
+                      </View>
+                      <View style={styles.pendentTasksIconAndLabel}></View>
+                    </View>
+
+                    <View>
+                      <Button
+                        accessoryLeft={UnlinkSchoolIcon}
+                        onPress={() => handleUnlinkFromSchool(student.id!)}
+                        appearance="ghost"
+                      />
+                    </View>
+                  </View>
+                </Card>
+              ))}
+            </View>
+          ) : students.length === 0 && isUserTutor() ? (
+            <View style={{ alignSelf: "center" }}>
+              <Text>Não há alunos vinculados a esta escola ainda.</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
-export default TutorSchoolDetails;
+export default SchoolDetails;
+
+const styles = StyleSheet.create({
+  mainContent: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  profileImage: {
+    width: "100%",
+    height: 350,
+  },
+
+  icons: {
+    width: 22,
+    height: 22,
+  },
+
+  dataContainer: {
+    display: "flex",
+    flexDirection: "column",
+    marginTop: 20,
+  },
+
+  schoolData: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+
+  contactInfoContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  studentCard: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  qrModalCloseButton: {
+    marginTop: -22,
+    marginRight: -40,
+    alignSelf: "flex-end",
+  },
+
+  qrModalContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+    alignItems: "center",
+    alignSelf: "center",
+  },
+
+  qrContainer: {
+    marginBottom: 20,
+  },
+
+  studentCardFirstHalf: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+  },
+
+  studentNameAndLinked: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 2,
+  },
+
+  pendentTasksIconAndLabel: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+});

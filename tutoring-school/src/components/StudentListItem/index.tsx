@@ -1,12 +1,12 @@
-import { ButtonGroup, Card, Text } from "@ui-kitten/components";
-import { Button, View } from "react-native";
-import { PendentTaskIcon, EditIcon, DeleteIcon } from "../../theme/Icons";
+import { Card, Text } from "@ui-kitten/components";
+import { View } from "react-native";
+import { PendentTaskIcon } from "../../theme/Icons";
 import {
   countPendentTasksInTaskArray,
   showStudentPendentTasksString,
 } from "../../utils/generalFunctions";
 import { Student } from "../../services/Student/type";
-import styles from "./styles";
+import { StyleSheet } from "react-native";
 import { ReactNode } from "react";
 
 interface StudentListItemProps {
@@ -18,7 +18,7 @@ const StudentListItem = (props: StudentListItemProps) => {
   const { student, onPress, actions } = props;
 
   return (
-    <Card key={student.id} onPress={onPress}>
+    <Card key={student.id} onPress={onPress} >
       <View style={styles.studentCard}>
         <View style={styles.studentCardFirstHalf}>
           <View style={styles.studentNameAndLinked}>
@@ -56,3 +56,35 @@ const StudentListItem = (props: StudentListItemProps) => {
 };
 
 export default StudentListItem;
+
+
+
+const styles = StyleSheet.create({
+  studentCard: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  studentCardFirstHalf: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 3
+  },
+
+  studentNameAndLinked: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 2
+  },
+
+
+  pendentTasksIconAndLabel: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+});

@@ -8,6 +8,10 @@ export const EditIcon = (props: any): IconElement => (
   <Icon {...props} name="edit-outline" />
 );
 
+export const ConfirmIcon = (props: any): IconElement => (
+  <Icon {...props} name="checkmark-outline" />
+);
+
 export const DeleteIcon = (props: any): IconElement => (
   <Icon {...props} name="trash-2-outline" />
 );

@@ -1,5 +1,6 @@
-import { Modal } from "@ui-kitten/components";
+import { Button, Modal } from "@ui-kitten/components";
 import { Dispatch, ReactNode } from "react";
+import { UnlinkSchoolIcon } from "../../theme/Icons";
 
 interface GenericModalProps {
   isVisible: boolean;
@@ -16,6 +17,7 @@ const GenericModal = (props: GenericModalProps) => {
       visible={isVisible}
       onBackdropPress={() => setIsVisible(false)}
     >
+      
       {children}
     </Modal>
   );

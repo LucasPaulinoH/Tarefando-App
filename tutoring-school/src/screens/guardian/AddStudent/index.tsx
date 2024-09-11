@@ -1,5 +1,5 @@
-import { View } from "react-native";
-import { Text, Input, Button } from "@ui-kitten/components";
+import { ScrollView, View } from "react-native";
+import { Text, Input, Button, useTheme } from "@ui-kitten/components";
 import React, { useState } from "react";
 import { AddIcon } from "../../../theme/Icons";
 import studentApi from "../../../services/Student";
@@ -10,9 +10,12 @@ import { dateToString } from "../../../utils/stringUtils";
 import { studentValidationSchema } from "../../../validations/student";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
+import { styles } from "../studentScreenStyles";
 
 const AddStudent = ({ navigation }: any) => {
   const { authState } = useAuth();
+
+  const theme = useTheme();
 
   const {
     control,
@@ -49,80 +52,85 @@ const AddStudent = ({ navigation }: any) => {
   };
 
   return (
-    <View>
-      {isBirthdayModalVisible && (
-        <DateTimePicker
-          mode="date"
-          display="spinner"
-          value={birthdate}
-          onChange={(_: any, selectedDate: Date) => {
-            setBirthdate(selectedDate);
-            setIsBirthdayModalVisible(false);
+    <View style={{ backgroundColor: theme["color-primary-100"] }}>
+      <View style={styles.mainContent}>
+        {isBirthdayModalVisible && (
+          <DateTimePicker
+            mode="date"
+            display="spinner"
+            value={birthdate}
+            onChange={(_: any, selectedDate: Date) => {
+              setBirthdate(selectedDate);
+              setIsBirthdayModalVisible(false);
+            }}
+          />
+        )}
+        <Text category="h6" style={styles.newStudentLabel}>
+          Novo estudante
+        </Text>
+        <Controller
+          control={control}
+          rules={{
+            required: true,
           }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Nome *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.firstName ? "danger" : "basic"}
+              caption={errors.firstName ? errors.firstName.message : ""}
+            />
+          )}
+          name="firstName"
         />
-      )}
-      <Text category="h6">Novo estudante</Text>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Nome *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.firstName ? "danger" : "basic"}
-            caption={errors.firstName ? errors.firstName.message : ""}
-          />
-        )}
-        name="firstName"
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Sobrenome *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.lastName ? "danger" : "basic"}
-            caption={errors.lastName ? errors.lastName.message : ""}
-          />
-        )}
-        name="lastName"
-      />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Sobrenome *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.lastName ? "danger" : "basic"}
+              caption={errors.lastName ? errors.lastName.message : ""}
+            />
+          )}
+          name="lastName"
+        />
 
-      <Input
-        label="Data de nascimento *"
-        placeholder="dd/mm/aaaa"
-        value={dateToString(birthdate, true)}
-        onPress={() => setIsBirthdayModalVisible(true)}
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Série *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.grade ? "danger" : "basic"}
-            caption={errors.grade ? errors.grade.message : ""}
-          />
-        )}
-        name="grade"
-      />
-      <Button
-        accessoryLeft={AddIcon}
-        onPress={handleSubmit(handleAddStudentClick)}
-      >
-        Adicionar estudante
-      </Button>
+        <Input
+          label="Data de nascimento *"
+          placeholder="dd/mm/aaaa"
+          value={dateToString(birthdate, true)}
+          onPress={() => setIsBirthdayModalVisible(true)}
+        />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Série *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.grade ? "danger" : "basic"}
+              caption={errors.grade ? errors.grade.message : ""}
+            />
+          )}
+          name="grade"
+        />
+        <Button
+          accessoryLeft={AddIcon}
+          onPress={handleSubmit(handleAddStudentClick)}
+          style={styles.addNewStudentButton}
+        >
+          Adicionar estudante
+        </Button>
+      </View>
     </View>
   );
 };

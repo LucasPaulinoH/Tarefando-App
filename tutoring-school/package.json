@@ -38,6 +38,7 @@
     "react-native-screens": "^3.31.1",
     "react-native-svg": "^15.3.0",
     "react-native-web": "~0.19.10",
+    "tutoring-school": "file:",
     "yup": "^1.4.0"
   },
   "devDependencies": {

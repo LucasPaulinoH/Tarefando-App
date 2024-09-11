@@ -30,6 +30,7 @@ import {
 import AddAnnouncement from "../screens/tutor/AddAnnouncement";
 import AnnouncementDetails from "../screens/tutor/AnnouncementDetails";
 import EditAnnouncement from "../screens/tutor/EditAnnouncement";
+import { useTheme } from "@ui-kitten/components";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,6 +43,7 @@ const TABBAR_ICON_SIZE = 25;
 
 const Routes = () => {
   const { authState } = useAuth();
+  const theme = useTheme();
 
   const GuardianHomeStack = () => {
     return (
@@ -126,9 +128,22 @@ const Routes = () => {
             <Tab.Navigator
               screenOptions={{
                 header: () => (
-                  <View style={{ marginTop: StatusBar.currentHeight }} />
+                  <View
+                    style={{
+                      marginTop: StatusBar.currentHeight,
+                    }}
+                  />
                 ),
-                tabBarInactiveTintColor: "grey",
+                tabBarStyle: {
+                  backgroundColor: theme["color-primary-900"],
+                  borderTopLeftRadius: 15,
+                  borderTopRightRadius: 15,
+                },
+                tabBarLabelStyle: {
+                  fontWeight: 'bold',
+                },
+                tabBarActiveTintColor: theme["color-primary-200"],
+                tabBarInactiveTintColor: theme["color-primary-600"],
               }}
             >
               <Tab.Screen
@@ -136,7 +151,7 @@ const Routes = () => {
                 component={GuardianHomeStack}
                 options={{
                   title: "Alunos",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <StudentsIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
@@ -152,7 +167,7 @@ const Routes = () => {
                 component={GuardianAnnouncementsStack}
                 options={{
                   title: "Comunicados",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <AnnouncementIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
@@ -168,7 +183,7 @@ const Routes = () => {
                 component={MeStack}
                 options={{
                   title: "Eu",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <PersonIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
@@ -193,13 +208,12 @@ const Routes = () => {
                 component={TutorHomeStack}
                 options={{
                   title: "Escolas",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: () => (
                     <SchoolIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
-                      fill={color}
                     />
                   ),
                 }}
@@ -209,13 +223,12 @@ const Routes = () => {
                 component={TutorStudentsStack}
                 options={{
                   title: "Estudantes",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: () => (
                     <StudentsIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
-                      fill={color}
                     />
                   ),
                 }}
@@ -225,13 +238,12 @@ const Routes = () => {
                 component={TutorAnnouncementsStack}
                 options={{
                   title: "Comunicados",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: () => (
                     <AnnouncementIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
-                      fill={color}
                     />
                   ),
                 }}
@@ -241,13 +253,12 @@ const Routes = () => {
                 component={MeStack}
                 options={{
                   title: "Eu",
-                  tabBarIcon: ({ color }) => (
+                  tabBarIcon: () => (
                     <PersonIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
-                      fill={color}
                     />
                   ),
                 }}

@@ -1,5 +1,5 @@
-import { ScrollView, View } from "react-native";
-import { Button, Input, Text } from "@ui-kitten/components";
+import { View } from "react-native";
+import { Button, Input, Text, useTheme } from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
 import { LoginIcon } from "../../../theme/Icons";
 import { StyleSheet } from "react-native";
@@ -10,11 +10,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 const Login = ({ navigation }: any) => {
   const { onLogin } = useAuth();
 
+  const theme = useTheme();
+
   const handleLogin = async (formData: any) => {
     try {
       await onLogin!(formData.email, formData.password);
     } catch (error) {
-      console.error("Error during login: ", error);
+      console.error("Error during login:   ", error);
     }
   };
 
@@ -31,67 +33,73 @@ const Login = ({ navigation }: any) => {
   });
 
   return (
-    <ScrollView>
-      <View style={styles.mainContainer}>
-        <View style={styles.innerContainer}>
-          <Text category="h3">Tia Lady Ajuda</Text>
-          <Text category="h5">Acesse sua conta</Text>
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                placeholder="Email *"
-                value={value}
-                onChangeText={onChange}
-                status={errors.email ? "danger" : "basic"}
-                caption={errors.email ? errors.email.message : ""}
-              />
-            )}
-            name="email"
-          />
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                placeholder="Senha *"
-                value={value}
-                onChangeText={onChange}
-                secureTextEntry
-                status={errors.password ? "danger" : "basic"}
-                caption={errors.password ? errors.password.message : ""}
-              />
-            )}
-            name="password"
-          />
-          <Button
-            onPress={handleSubmit(handleLogin)}
-            style={styles.loginButton}
-            accessoryLeft={LoginIcon}
-          >
-            Conectar-se
-          </Button>
+    <View
+      style={{
+        ...styles.mainContainer,
+        backgroundColor: theme["color-primary-100"],
+      }}
+    >
+      <View style={styles.innerContainer}>
+        <Text category="h3">Tia Lady Ajuda</Text>
+        <Text category="h5">Acesse sua conta</Text>
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Email *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.email ? "danger" : "basic"}
+              caption={errors.email ? errors.email.message : ""}
+            />
+          )}
+          name="email"
+        />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Senha *"
+              value={value}
+              onChangeText={onChange}
+              secureTextEntry
+              status={errors.password ? "danger" : "basic"}
+              caption={errors.password ? errors.password.message : ""}
+            />
+          )}
+          name="password"
+        />
+        <Button
+          onPress={handleSubmit(handleLogin)}
+          style={styles.loginButton}
+          accessoryLeft={LoginIcon}
+        >
+          Conectar-se
+        </Button>
 
-          <View style={styles.notRegisteredYetRow}>
-            <Text category="s1">
-              Ainda não possui uma conta?{" "}
-              <Text
-                category="s1"
-                style={styles.newAccountText}
-                onPress={() => navigation.navigate("Register")}
-              >
-                Crie uma
-              </Text>
+        <View style={styles.notRegisteredYetRow}>
+          <Text category="s1">
+            Ainda não possui uma conta?{" "}
+            <Text
+              category="s1"
+              style={{
+                ...styles.newAccountText,
+                color: theme["color-primary-500"],
+              }}
+              onPress={() => navigation.navigate("Register")}
+            >
+              Crie uma
             </Text>
-          </View>
+          </Text>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

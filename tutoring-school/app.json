@@ -21,12 +21,23 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.lucaspaulinoh.tutoringschool"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "build": { "babel": { "include": ["@ui-kitten/components"] } },
+    "build": {
+      "babel": {
+        "include": [
+          "@ui-kitten/components"
+        ]
+      }
+    },
     "plugins": [
       [
         "expo-camera",
@@ -36,10 +47,21 @@
           "recordAudioAndroid": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ec83668b-114f-4a9e-b219-9d69f3a47e88"
+      }
+    }
   },
   "packageOpts": {
     "config": "metro.config.js",
-    "sourceExts": ["js", "jsx", "ts", "tsx", "svg"]
+    "sourceExts": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "svg"
+    ]
   }
 }

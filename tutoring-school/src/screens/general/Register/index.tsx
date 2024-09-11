@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
-import styles from "./styles";
-import { Avatar, Button, Input, Text } from "@ui-kitten/components";
+import { Avatar, Button, Input, Text, useTheme } from "@ui-kitten/components";
 import RoleSelectCard from "../../../components/RoleSelectCard";
 import { useAuth } from "../../../context/AuthContext";
 import { UserRole } from "../../../types/Types";
@@ -13,9 +12,13 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { registerValidationSchema } from "../../../validations/register";
+import { StyleSheet } from "react-native";
+import { EditIcon } from "../../../theme/Icons";
+import userIcon from "../../../../assets/user.png";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
+  const theme = useTheme();
 
   const {
     control,
@@ -91,19 +94,22 @@ const Register = ({ navigation }: any) => {
       <Text category="h3">Tia Lady Ajuda</Text>
       <Text category="h5">1. Preencha os dados de usuário</Text>
       <Avatar
-        style={{ width: 150, height: 150 }}
+        style={styles.avatar}
         size="giant"
-        source={{ uri: profileImage! }}
+        source={profileImage ? { uri: profileImage } : userIcon}
       />
+      <Button
+        onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
+        accessoryLeft={EditIcon}
+        style={styles.editImageButton}
+      />
+
       <View>
-        <Button
-          onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
-        >
-          <Text>Adicionar foto de perfil</Text>
-        </Button>
-        <Button onPress={() => setProfileImage(null)} appearance="outline">
-          <Text>Limpar</Text>
-        </Button>
+        {profileImage ? (
+          <Button onPress={() => setProfileImage(null)} appearance="ghost">
+            <Text>Limpar imagem</Text>
+          </Button>
+        ) : null}
       </View>
       <Controller
         control={control}
@@ -243,7 +249,7 @@ const Register = ({ navigation }: any) => {
   );
 
   return (
-    <ScrollView>
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
       <View style={styles.mainContainer}>
         {currentStep === 0 ? renderFirstStep : renderSecondStep}
       </View>
@@ -252,3 +258,39 @@ const Register = ({ navigation }: any) => {
 };
 
 export default Register;
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+    width: "100%",
+    marginTop: 20,
+    paddingBottom: 50,
+  },
+  innerContainer: {
+    width: "90%",
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+  },
+  avatar: {
+    width: 150,
+    height: 150,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: "#F7A8B0",
+  },
+  editImageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    marginTop: -60,
+    marginLeft: 100,
+  },
+  button: {
+    width: "100%",
+  },
+});
