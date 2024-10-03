@@ -40,7 +40,7 @@ const Login = ({ navigation }: any) => {
       }}
     >
       <View style={styles.innerContainer}>
-        <Text category="h3">Tia Lady Ajuda</Text>
+        <Text category="h3">Tutoring School</Text>
         <Text category="h5">Acesse sua conta</Text>
         <Controller
           control={control}

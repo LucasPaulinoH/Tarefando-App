@@ -17,7 +17,6 @@ const GenericModal = (props: GenericModalProps) => {
       visible={isVisible}
       onBackdropPress={() => setIsVisible(false)}
     >
-      
       {children}
     </Modal>
   );

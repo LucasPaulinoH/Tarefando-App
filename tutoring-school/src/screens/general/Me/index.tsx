@@ -10,7 +10,7 @@ import {
   Text,
   useTheme,
 } from "@ui-kitten/components";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { UserRole } from "../../../types/Types";
 import {
   ConfirmIcon,
@@ -39,6 +39,8 @@ import {
 } from "../../../validations/me";
 import userIcon from "../../../../assets/user.png";
 import { StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { LOADING_STRING, shortenLargeTexts } from "../../../utils/stringUtils";
 
 const ICON_SIZE = 24;
 
@@ -172,9 +174,11 @@ const Me = ({ navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [])
+  );
 
   useEffect(() => {
     if (tabIndex === 0) {
@@ -409,25 +413,37 @@ const Me = ({ navigation }: any) => {
               <View style={styles.userInfoContainer}>
                 <PersonIcon
                   style={styles.userInfoIcon}
-                  fill={theme["color-primary-900"]}
+                  fill={theme["color-primary-500"]}
                 />
-                <Text>{`${user?.name} (${
-                  user?.role === UserRole.GUARDIAN
-                    ? "Responsável"
-                    : "Professor(a)"
-                })`}</Text>
+                <Text>
+                  {shortenLargeTexts(
+                    user?.name
+                      ? `${user?.name} (${
+                          user?.role === UserRole.GUARDIAN
+                            ? "Responsável"
+                            : "Professor(a)"
+                        })`
+                      : LOADING_STRING,
+                    41
+                  )}
+                </Text>
               </View>
               <View style={styles.userInfoContainer}>
                 <EmailIcon
                   style={styles.userInfoIcon}
-                  fill={theme["color-primary-900"]}
+                  fill={theme["color-primary-500"]}
                 />
-                <Text>{user?.email}</Text>
+                <Text> {shortenLargeTexts(
+                    user?.email
+                      ? `${user?.email}`
+                      : LOADING_STRING,
+                    41
+                  )}</Text>
               </View>
               <View style={styles.userInfoContainer}>
                 <PhoneIcon
                   style={styles.userInfoIcon}
-                  fill={theme["color-primary-900"]}
+                  fill={theme["color-primary-500"]}
                 />
                 <Text>{user?.phone}</Text>
               </View>

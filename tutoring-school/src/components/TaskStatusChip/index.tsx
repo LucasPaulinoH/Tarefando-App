@@ -9,25 +9,21 @@ import {
 } from "../../theme/palette";
 import { dateToString } from "../../utils/stringUtils";
 import { checkTaskStatusFromTaskDeadline } from "../../utils/generalFunctions";
+import { Task } from "../../services/Task/type";
 
 interface TaskStatusChipProps {
-  deadlineDate: Date;
-  isConcluded: boolean;
+  task: Task;
 }
 
 const CURRENT_DATE = new Date();
 
 const TaskStatusChip = (props: TaskStatusChipProps) => {
-  const { deadlineDate, isConcluded } = props;
+  const { task } = props;
 
-  const deadlineDateAsDate = new Date(deadlineDate);
+  const deadlineDateAsDate = new Date(task.deadlineDate);
   const deadlineYear = deadlineDateAsDate.getFullYear();
 
-  const thisTaskStatus = checkTaskStatusFromTaskDeadline(
-    deadlineDateAsDate,
-    CURRENT_DATE,
-    isConcluded
-  );
+  const thisTaskStatus = checkTaskStatusFromTaskDeadline(task);
 
   return (
     <View

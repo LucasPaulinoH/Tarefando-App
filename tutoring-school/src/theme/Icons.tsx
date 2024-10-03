@@ -28,6 +28,10 @@ export const FinishedTaskIcon = (props: any): IconElement => (
   <Icon {...props} name="checkmark-circle-outline" />
 );
 
+export const ImageIcon = (props: any): IconElement => (
+  <Icon {...props} name="image-outline" />
+);
+
 export const CancelledTaskIcon = (props: any): IconElement => (
   <Icon {...props} name="close-circle-outline" />
 );
@@ -83,3 +87,8 @@ export const PhoneIcon = (props: any): IconElement => (
 export const SendMessageIcon = (props: any): IconElement => (
   <Icon {...props} name="paper-plane-outline" />
 );
+
+export const BackIcon = (props: any): IconElement => (
+  <Icon {...props} name="arrow-back-outline" />
+);
+

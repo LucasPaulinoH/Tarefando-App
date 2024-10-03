@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View, Image } from "react-native";
 import { ReceivedAnnouncementDTO } from "../../../services/Announcement/type";
 import announcementApi from "../../../services/Announcement";
 import { useAuth } from "../../../context/AuthContext";
@@ -14,6 +14,7 @@ const GuardianAnnouncements = () => {
 
   const theme = useTheme();
 
+  const [loading, setLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<ReceivedAnnouncementDTO[]>(
     []
   );
@@ -40,6 +41,7 @@ const GuardianAnnouncements = () => {
     } catch (error) {
       console.log("Error fetching announcements: ", error);
     }
+    setLoading(false);
   };
 
   useFocusEffect(
@@ -55,27 +57,52 @@ const GuardianAnnouncements = () => {
   return (
     <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
       <View style={styles.mainContainer}>
-        {announcements.length > 0
-          ? announcements.map((announcement, index) => (
-              <>
-                <Card key={index} style={styles.announcementCard}>
-                  <View>
-                    <Text category="h6">{announcement.title}</Text>
-                    <Text>{announcement.description}</Text>
-                  </View>
-                  <View style={styles.announcementAuthorInfo}>
-                    <Avatar
-                      src={authorCards[index]?.profileImage ?? null}
-                      style={styles.authorAvatar}
-                    />
-                    <Text>
-                      {authorCards[index]?.userName ?? "Carregando autor..."}
-                    </Text>
-                  </View>
-                </Card>
-              </>
-            ))
-          : null}
+        <Text category="h6">Comunicados</Text>
+        {!loading ? (
+          <View style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {announcements.length > 0 ? (
+              announcements.map((announcement, index) => (
+                <>
+                  <Card
+                    key={`${announcement.title}${index}`}
+                    style={styles.announcementCard}
+                  >
+                    <View>
+                      <Text category="h6">{announcement.title}</Text>
+                      <Text>{announcement.description}</Text>
+                    </View>
+                    <View style={styles.announcementAuthorInfo}>
+                      <Avatar
+                        src={authorCards[index]?.profileImage ?? null}
+                        style={styles.authorAvatar}
+                      />
+                      <Text>
+                        {authorCards[index]?.userName ?? "Carregando autor..."}
+                      </Text>
+                    </View>
+                  </Card>
+                </>
+              ))
+            ) : (
+              <View style={{ ...styles.studentInfo, marginTop: 175, gap: 30 }}>
+                <Image
+                  source={require("../../../../assets/noAnnouncements.png")}
+                  style={styles.image}
+                />
+                <Text style={{ textAlign: "center" }} category="h6">
+                  Nenhum comunicado recebido
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.mainContainer}>
+            <ActivityIndicator
+              size="large"
+              color={theme["color-primary-500"]}
+            />
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -88,14 +115,27 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     marginTop: 20,
+    marginBottom: 50,
     paddingLeft: 15,
     paddingRight: 15,
-    gap: 5,
+    gap: 20,
   },
 
   announcementCard: {
     display: "flex",
     flexDirection: "column",
+  },
+
+  studentInfo: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  image: {
+    width: 160,
+    height: 160,
+    resizeMode: "contain",
   },
 
   announcementAuthorInfo: {
@@ -104,7 +144,7 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "center",
     marginTop: 10,
-    alignSelf: "flex-end"
+    alignSelf: "flex-end",
   },
 
   authorAvatar: {

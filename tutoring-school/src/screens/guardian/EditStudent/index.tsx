@@ -11,6 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { studentValidationSchema } from "../../../validations/student";
 import { styles } from "../studentScreenStyles";
+import BackPageButton from "../../../components/BackPageButton";
 
 const EditStudent = ({ navigation }: any) => {
   const theme = useTheme();
@@ -55,6 +56,7 @@ const EditStudent = ({ navigation }: any) => {
 
   return (
     <View style={{ backgroundColor: theme["color-primary-100"] }}>
+       <BackPageButton onPress={() => navigation.goBack()} />
       <View style={styles.mainContent}>
         {isBirthdayModalVisible && (
           <DateTimePicker

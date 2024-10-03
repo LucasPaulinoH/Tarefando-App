@@ -24,15 +24,13 @@ export const getSubjectsFromATaskArray = async (tasks: Task[]) => {
   }
 };
 
-export const checkTaskStatusFromTaskDeadline = (
-  deadlineDate: Date,
-  currentDate: Date,
-  concluded: boolean
-) => {
-  if (concluded) return TaskStatus.CONCLUDED;
-  else if (currentDate.getTime() <= deadlineDate.getTime())
+export const checkTaskStatusFromTaskDeadline = (task: Task) => {
+  const formattedDeadline = new Date(task.deadlineDate);
+
+  if (task.concluded) return TaskStatus.CONCLUDED;
+  else if (CURRENT_DATE.getTime() <= formattedDeadline.getTime())
     return TaskStatus.PENDENT;
-  else if (currentDate.getTime() > deadlineDate.getTime())
+  else if (CURRENT_DATE.getTime() > formattedDeadline.getTime())
     return TaskStatus.DELAYED;
 };
 

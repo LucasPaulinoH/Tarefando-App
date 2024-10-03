@@ -23,6 +23,7 @@ import { Subject } from "../../../services/Subject/type";
 import { useCallback, useEffect, useState } from "react";
 import {
   calculateAge,
+  checkTaskStatusFromTaskDeadline,
   getSubjectsFromATaskArray,
 } from "../../../utils/generalFunctions";
 import studentApi from "../../../services/Student";
@@ -31,15 +32,17 @@ import { Task } from "../../../services/Task/type";
 import { useFocusEffect } from "@react-navigation/native";
 import { School } from "../../../services/School/type";
 import schoolApi from "../../../services/School";
-import { shortenLargeTexts } from "../../../utils/stringUtils";
+import { LOADING_STRING, shortenLargeTexts } from "../../../utils/stringUtils";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useAuth } from "../../../context/AuthContext";
-import { UserRole } from "../../../types/Types";
+import { TaskStatus, UserRole } from "../../../types/Types";
 import userApi from "../../../services/User";
 import { UserCard } from "../../../services/User/type";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 import GenericModal from "../../../components/GenericModal";
 import { StyleSheet } from "react-native";
+import TaskStatusFilterButton from "../../../components/TaskStatusFilterButton";
+import BackPageButton from "../../../components/BackPageButton";
 
 const StudentDetails = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
@@ -50,8 +53,11 @@ const StudentDetails = ({ navigation }: any) => {
 
   const { authState } = useAuth();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [wantsToScanLinkingCode, setWantsToScanLinkingCode] = useState(false);
+
+  const [selectedTaskStatusFilterType, setSelectedTaskStatusFilterType] =
+    useState(0);
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [readCode, setReadCode] = useState("");
@@ -67,14 +73,17 @@ const StudentDetails = ({ navigation }: any) => {
   const [student, setStudent] = useState<Student>({} as Student);
   const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [school, setSchool] = useState<School>({} as School);
   const [guardianCard, setGuardianCard] = useState<UserCard>({
-    userName: "Carregando...",
+    userName: LOADING_STRING,
     profileImage: "",
   });
 
   const [isDeleteTaskConfirmationVisible, setIsDeleteTaskConfirmationVisible] =
     useState(false);
+
+  const [isUnlinkModalVisible, setIsUnlinkModalVisible] = useState(false);
   const [taskIdToBeDeleted, setTaskIdToBeDeleted] = useState("");
 
   const handleTaskDetailsClick = (taskId: string) => {
@@ -88,9 +97,12 @@ const StudentDetails = ({ navigation }: any) => {
 
       setStudent(studentResponse);
       setTasks(studentResponse.tasks!);
+      setFilteredTasks(studentResponse.tasks!);
     } catch (error) {
       console.error("Error fetching user details: ", error);
     }
+
+    setLoading(false);
   };
 
   const checkSchoolarLink = async () => {
@@ -99,9 +111,9 @@ const StudentDetails = ({ navigation }: any) => {
         student.id!
       );
 
-      if (!isSchoolValidResponse) fetchStudentDetails()
+      if (!isSchoolValidResponse) fetchStudentDetails();
     } catch (error) {
-      console.error("Error checking schoolar link: ", error.response.data);
+      console.error("Error checking schoolar link: ", error);
     }
   };
 
@@ -234,14 +246,76 @@ const StudentDetails = ({ navigation }: any) => {
     return ageInYears !== 1 ? `${ageInYears} anos` : `${ageInYears} ano`;
   };
 
-  const filteredTasks = tasks.filter(
-    (task) =>
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subjects.some(
-        (subject) =>
-          subject.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          subject.id === task.subjectId
-      )
+  const handleFilterTasksByStatus = (index: number) => {
+    setSelectedTaskStatusFilterType(
+      index !== selectedTaskStatusFilterType ? index : 0
+    );
+  };
+
+  const handleTaskFilter = (): Task[] =>{
+    let filteringResult = filteredTasks;
+
+    switch (selectedTaskStatusFilterType) {
+      case 0:
+        filteringResult = tasks;
+        break;
+      case 1:
+        filteringResult = tasks.filter(
+          (task) => checkTaskStatusFromTaskDeadline(task) === TaskStatus.PENDENT
+        );
+        break;
+      case 2:
+        filteringResult = tasks.filter((task) => task.concluded);
+        break;
+      case 3:
+        filteringResult = tasks.filter(
+          (task) => checkTaskStatusFromTaskDeadline(task) === TaskStatus.DELAYED
+        );
+        break;
+    }
+
+    return filteringResult.filter(
+      (task) =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        subjects.some(
+          (subject) =>
+            subject.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            subject.id === task.subjectId
+        )
+    );
+  }
+  
+  useEffect(() => {
+    setFilteredTasks(handleTaskFilter());
+  }, [searchTerm, selectedTaskStatusFilterType]);
+
+  const unlinkStudentConfirmationModal = (
+    <GenericModal
+      isVisible={isUnlinkModalVisible}
+      setIsVisible={setIsUnlinkModalVisible}
+    >
+      <Card disabled={true} style={styles.deleteTaskModal}>
+        <Button
+          style={styles.deleteTaskCloseButton}
+          accessoryLeft={UnlinkSchoolIcon}
+          onPress={() => setIsUnlinkModalVisible(false)}
+          appearance="ghost"
+        />
+        <Text>{`Tem certeza que deseja desvincular ${student.name} de ${school.name}?`}</Text>
+        <View style={styles.deleteTaskModalOptionsContainer}>
+          <Button onPress={handleUnlinkFromSchool} style={styles.buttons}>
+            Sim
+          </Button>
+          <Button
+            appearance="ghost"
+            onPress={() => setIsUnlinkModalVisible(false)}
+            style={styles.buttons}
+          >
+            Não
+          </Button>
+        </View>
+      </Card>
+    </GenericModal>
   );
 
   const deleteTaskConfirmationModal = (
@@ -249,25 +323,22 @@ const StudentDetails = ({ navigation }: any) => {
       isVisible={isDeleteTaskConfirmationVisible}
       setIsVisible={setIsDeleteTaskConfirmationVisible}
     >
-      <Card disabled={true}>
+      <Card disabled={true} style={styles.deleteTaskModal}>
         <Button
+          style={styles.deleteTaskCloseButton}
           accessoryLeft={UnlinkSchoolIcon}
           onPress={() => setIsDeleteTaskConfirmationVisible(false)}
           appearance="ghost"
         />
         <Text>Tem certeza que deseja excluir esta tarefa?</Text>
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button onPress={handleDeleteTask}>Sim</Button>
+        <View style={styles.deleteTaskModalOptionsContainer}>
+          <Button onPress={handleDeleteTask} style={styles.buttons}>
+            Sim
+          </Button>
           <Button
-            appearance="outline"
+            appearance="ghost"
             onPress={() => setIsDeleteTaskConfirmationVisible(false)}
+            style={styles.buttons}
           >
             Não
           </Button>
@@ -278,8 +349,10 @@ const StudentDetails = ({ navigation }: any) => {
 
   return (
     <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      {deleteTaskConfirmationModal}
+      {unlinkStudentConfirmationModal}
+      <BackPageButton onPress={() => navigation.goBack()} />
       <View style={styles.mainContent}>
-        {deleteTaskConfirmationModal}
         {!loading ? (
           <>
             <View style={styles.studentInfo}>
@@ -305,13 +378,16 @@ const StudentDetails = ({ navigation }: any) => {
                           />
 
                           <View>
-                            <Text category="h6">{school.name ?? "..."}</Text>
+                            <Text category="h6">
+                              {`${shortenLargeTexts(
+                                school.name || LOADING_STRING,
+                                20
+                              )}`}
+                            </Text>
                             <Text>{`${shortenLargeTexts(
-                              `${school.district}`,
-                              20
-                            )}, ${shortenLargeTexts(
-                              `${school.city}`,
-                              20
+                              `${school.district}, ${school.city}` ||
+                                LOADING_STRING,
+                              25
                             )}`}</Text>
                           </View>
                         </View>
@@ -319,7 +395,7 @@ const StudentDetails = ({ navigation }: any) => {
                         <View>
                           <Button
                             accessoryLeft={UnlinkSchoolIcon}
-                            onPress={handleUnlinkFromSchool}
+                            onPress={() => setIsUnlinkModalVisible(true)}
                             appearance="ghost"
                           />
                         </View>
@@ -350,78 +426,124 @@ const StudentDetails = ({ navigation }: any) => {
                   Adicionar atividade
                 </Button>
                 {student.tasks!.length > 0 ? (
-                  <Input
-                    placeholder="Buscar atividade..."
-                    accessoryLeft={SearchIcon}
-                    value={searchTerm}
-                    onChangeText={(search) => setSearchTerm(search)}
-                  />
-                ) : null}
+                  <>
+                    <Input
+                      placeholder="Buscar atividade..."
+                      accessoryLeft={SearchIcon}
+                      value={searchTerm}
+                      onChangeText={(search) => setSearchTerm(search)}
+                    />
+                    <View style={styles.taskStatusFilterContainer}>
+                      <TaskStatusFilterButton
+                        status={TaskStatus.PENDENT}
+                        isSelected={selectedTaskStatusFilterType === 1}
+                        onPress={() => handleFilterTasksByStatus(1)}
+                      />
+                      <TaskStatusFilterButton
+                        status={TaskStatus.CONCLUDED}
+                        isSelected={selectedTaskStatusFilterType === 2}
+                        onPress={() => handleFilterTasksByStatus(2)}
+                      />
+                      <TaskStatusFilterButton
+                        status={TaskStatus.DELAYED}
+                        isSelected={selectedTaskStatusFilterType === 3}
+                        onPress={() => handleFilterTasksByStatus(3)}
+                      />
+                    </View>
 
-                {filteredTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    onPress={() => {
-                      handleTaskDetailsClick(task.id!);
+                    {filteredTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        onPress={() => {
+                          handleTaskDetailsClick(task.id!);
+                        }}
+                      >
+                        <View style={styles.taskCard}>
+                          <View>
+                            <Text category="h6">
+                              {shortenLargeTexts(
+                                task.title || LOADING_STRING,
+                                20
+                              )}
+                            </Text>
+                            <Text category="s1">
+                              {shortenLargeTexts(
+                                subjects.find(
+                                  (subject) => subject.id === task.subjectId
+                                )?.name || LOADING_STRING,
+                                20
+                              )}
+                            </Text>
+                          </View>
+
+                          <View style={styles.taskCardSecondHalf}>
+                            <TaskStatusChip task={task} />
+                            <Button
+                              accessoryLeft={MoreOptionsVerticalIcon}
+                              style={styles.moreOptionsButton}
+                              appearance="ghost"
+                              onPress={() => handleMoreOptionsClick(task)}
+                            />
+                            <Modal
+                              visible={moreOptionsVisible}
+                              backdropStyle={styles.moreOptionsModal}
+                              onBackdropPress={() =>
+                                setMoreOptionsVisible(false)
+                              }
+                            >
+                              <Card disabled={true}>
+                                <View style={styles.modalCard}>
+                                  <Text category="h6">
+                                    {selectedTask.title}
+                                  </Text>
+                                  <Button
+                                    accessoryLeft={EditIcon}
+                                    onPress={() => handleEditTaskClick(task)}
+                                  >
+                                    Editar tarefa
+                                  </Button>
+                                  <Button
+                                    accessoryLeft={DeleteIcon}
+                                    onPress={() => {
+                                      handleSelectTaskForDeletion(
+                                        selectedTask.id!
+                                      );
+                                    }}
+                                  >
+                                    Excluir tarefa
+                                  </Button>
+                                </View>
+                              </Card>
+                            </Modal>
+                          </View>
+                        </View>
+                      </Card>
+                    ))}
+                  </>
+                ) : (
+                  <View
+                    style={{
+                      ...styles.studentInfo,
+                      marginTop: 50,
+                      width: "100%",
                     }}
                   >
-                    <View style={styles.taskCard}>
-                      <View>
-                        <Text category="h6">{task.title}</Text>
-                        <Text category="s1">
-                          {subjects.find(
-                            (subject) => subject.id === task.subjectId
-                          )?.name || "Carregando..."}
-                        </Text>
-                      </View>
-
-                      <View style={styles.taskCardSecondHalf}>
-                        <TaskStatusChip
-                          deadlineDate={task.deadlineDate}
-                          isConcluded={task.concluded!}
-                        />
-                        <Button
-                          accessoryLeft={MoreOptionsVerticalIcon}
-                          style={styles.moreOptionsButton}
-                          appearance="outline"
-                          onPress={() => handleMoreOptionsClick(task)}
-                        />
-                        <Modal
-                          visible={moreOptionsVisible}
-                          backdropStyle={styles.moreOptionsModal}
-                          onBackdropPress={() => setMoreOptionsVisible(false)}
-                        >
-                          <Card disabled={true}>
-                            <View style={styles.modalCard}>
-                              <Text>{selectedTask.title}</Text>
-                              <Button
-                                accessoryLeft={EditIcon}
-                                onPress={() => handleEditTaskClick(task)}
-                              >
-                                Editar tarefa
-                              </Button>
-                              <Button
-                                accessoryLeft={DeleteIcon}
-                                onPress={() => {
-                                  handleSelectTaskForDeletion(selectedTask.id!);
-                                }}
-                              >
-                                Excluir tarefa
-                              </Button>
-                            </View>
-                          </Card>
-                        </Modal>
-                      </View>
-                    </View>
-                  </Card>
-                ))}
+                    <Image
+                      source={require("../../../../assets/noTaskRegistered.png")}
+                      style={styles.image}
+                    />
+                    <Text style={{ textAlign: "center" }} category="h6">
+                      Sem tarefas cadastradas!
+                    </Text>
+                  </View>
+                )}
               </>
             ) : isUserTutor() ? null : !cameraPermission ? (
               <></>
             ) : !cameraPermission.granted ? (
               <View>
                 <Button onPress={requestCameraPermission}>
-                  <Text></Text>
+                  <Text>Permitir acesso à câmera</Text>
                 </Button>
               </View>
             ) : !wantsToScanLinkingCode ? (
@@ -488,7 +610,7 @@ const StudentDetails = ({ navigation }: any) => {
               <View
                 style={{
                   ...styles.studentInfo,
-                  marginTop: 20,
+                  marginTop: 60,
                   gap: 30,
                   width: "100%",
                 }}
@@ -527,7 +649,7 @@ const StudentDetails = ({ navigation }: any) => {
             )}
           </>
         ) : (
-          <View>
+          <View style={{...styles.mainContent, marginTop: 30}}>
             <ActivityIndicator
               size="large"
               color={theme["color-primary-500"]}
@@ -545,12 +667,18 @@ const styles = StyleSheet.create({
   mainContent: {
     width: "100%",
     height: "100%",
-    marginTop: 20,
+    marginTop: -20,
     paddingLeft: 15,
     paddingRight: 15,
     display: "flex",
     flexDirection: "column",
     gap: 15,
+  },
+
+  taskStatusFilterContainer: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 6,
   },
 
   studentInfo: {
@@ -579,8 +707,8 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 250,
-    height: 250,
+    width: 180,
+    height: 180,
     resizeMode: "contain",
   },
 
@@ -589,6 +717,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 10,
   },
 
   taskCardSecondHalf: {
@@ -612,6 +741,7 @@ const styles = StyleSheet.create({
   modalCard: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
     gap: 10,
   },
 
@@ -632,5 +762,22 @@ const styles = StyleSheet.create({
 
   schoolAvatar: {
     borderRadius: 5,
+  },
+
+  deleteTaskModal: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  deleteTaskCloseButton: {
+    marginTop: -32,
+    marginRight: -40,
+    alignSelf: "flex-end",
+  },
+
+  deleteTaskModalOptionsContainer: {
+    marginTop: 20,
   },
 });

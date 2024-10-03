@@ -1,4 +1,4 @@
-import { Card, Text } from "@ui-kitten/components";
+import { Card, Text, useTheme } from "@ui-kitten/components";
 import { View } from "react-native";
 import { PendentTaskIcon } from "../../theme/Icons";
 import {
@@ -8,6 +8,7 @@ import {
 import { Student } from "../../services/Student/type";
 import { StyleSheet } from "react-native";
 import { ReactNode } from "react";
+import { DELAYED_TASK } from "../../theme/palette";
 
 interface StudentListItemProps {
   student: Student;
@@ -16,6 +17,8 @@ interface StudentListItemProps {
 }
 const StudentListItem = (props: StudentListItemProps) => {
   const { student, onPress, actions } = props;
+
+  const theme = useTheme();
 
   return (
     <Card key={student.id} onPress={onPress} >
@@ -31,11 +34,11 @@ const StudentListItem = (props: StudentListItemProps) => {
               );
               return !student.schoolId ? (
                 <>
-                  <Text>Sem vínculo escolar</Text>
+                  <Text><Text style={{color: DELAYED_TASK}}>❌</Text> Sem vínculo escolar</Text>
                 </>
               ) : pendentTasksQuantity > 0 ? (
                 <>
-                  <PendentTaskIcon style={{ width: 20, height: 20 }} />
+                  <PendentTaskIcon style={{ width: 20, height: 20 }} fill={theme["color-primary-500"]}/>
                   <Text>
                     {showStudentPendentTasksString(pendentTasksQuantity)}
                   </Text>

@@ -22,3 +22,5 @@ export const compareQueryStrings = (string1: string, string2: string): boolean =
 
 export const formatWithLeadingZero = (number: number) =>
   number < 10 ? `0${number}` : number.toString();
+
+export const LOADING_STRING = "Carregando..."

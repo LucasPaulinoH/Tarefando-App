@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator, Image } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
 import {
   Button,
@@ -7,6 +7,7 @@ import {
   ButtonGroup,
   Card,
   useTheme,
+  Text,
 } from "@ui-kitten/components";
 import { Student } from "../../../services/Student/type";
 import studentApi from "../../../services/Student";
@@ -27,6 +28,8 @@ const GuardianHome = ({ navigation }: any) => {
   const { authState } = useAuth();
 
   const theme = useTheme();
+
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
@@ -54,6 +57,8 @@ const GuardianHome = ({ navigation }: any) => {
         guardianId!
       );
       setStudents(guardianStudentsResponse);
+
+      setLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -88,30 +93,27 @@ const GuardianHome = ({ navigation }: any) => {
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const deleteSchoolConfirmationModal = (
+  const deleteStudentConfirmationModal = (
     <GenericModal
       isVisible={isDeleteStudentConfirmationVisible}
       setIsVisible={setIsDeleteStudentConfirmationVisible}
     >
-      <Card disabled={true}>
+      <Card disabled={true} style={styles.deleteStudentModal}>
         <Button
+          style={styles.deleteStudentCloseButton}
           accessoryLeft={UnlinkSchoolIcon}
           onPress={() => setIsDeleteStudentConfirmationVisible(false)}
           appearance="ghost"
         />
         <Text>Tem certeza que deseja excluir este estudante?</Text>
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button onPress={handleDeleteStudent}>Sim</Button>
+        <View style={styles.deleteStudentModalOptionsContainer}>
+          <Button onPress={handleDeleteStudent} style={styles.buttons}>
+            Sim
+          </Button>
           <Button
-            appearance="outline"
+            appearance="ghost"
             onPress={() => setIsDeleteStudentConfirmationVisible(false)}
+            style={styles.buttons}
           >
             Não
           </Button>
@@ -122,56 +124,84 @@ const GuardianHome = ({ navigation }: any) => {
   return (
     <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
       <View style={styles.mainContent}>
-        {deleteSchoolConfirmationModal}
-        <View style={styles.addAndSearchBarContainer}>
-          <Button
-            accessoryLeft={AddIcon}
-            onPress={() => {
-              navigation.navigate("AddStudent");
-            }}
-            style={styles.addStudentButton}
-          >
-            Adicionar estudante
-          </Button>
-          {students.length > 0 ? (
-            <Input
-              placeholder="Buscar estudantes..."
-              accessoryLeft={SearchIcon}
-              value={searchTerm}
-              onChangeText={(search) => setSearchTerm(search)}
-            />
-          ) : null}
-        </View>
+        {!loading ? (
+          <>
+            {deleteStudentConfirmationModal}
+            <View style={styles.addAndSearchBarContainer}>
+              <Button
+                accessoryLeft={AddIcon}
+                onPress={() => {
+                  navigation.navigate("AddStudent");
+                }}
+                style={styles.addStudentButton}
+              >
+                Adicionar estudante
+              </Button>
+              {students.length > 0 ? (
+                <Input
+                  placeholder="Buscar estudantes..."
+                  accessoryLeft={SearchIcon}
+                  value={searchTerm}
+                  onChangeText={(search) => setSearchTerm(search)}
+                />
+              ) : null}
+            </View>
 
-        {filteredStudents.length > 0 ? (
-          <ScrollView style={styles.studentListContainer}>
-            {filteredStudents.map((student: Student) => (
-              <StudentListItem
-                student={student}
-                onPress={() => handleStudentDetailsClick(student.id!)}
-                actions={
-                  <ButtonGroup appearance="ghost">
-                    <Button
-                      accessoryLeft={EditIcon}
-                      onPress={() => {
-                        handleEditStudentClick(student);
-                      }}
-                    />
-                    <Button
-                      accessoryLeft={DeleteIcon}
-                      onPress={() => {
-                        handleSelectStudentForDeletion(student.id!);
-                      }}
-                    />
-                  </ButtonGroup>
-                }
-                key={student.id}
-              />
-            ))}
-          </ScrollView>
+            <ScrollView style={styles.studentListContainer}>
+              {filteredStudents.length > 0 ? (
+                <>
+                  {filteredStudents.map((student: Student, index: number) => (
+                    <>
+                      <StudentListItem
+                        student={student}
+                        onPress={() => handleStudentDetailsClick(student.id!)}
+                        actions={
+                          <ButtonGroup appearance="ghost">
+                            <Button
+                              accessoryLeft={EditIcon}
+                              onPress={() => {
+                                handleEditStudentClick(student);
+                              }}
+                            />
+                            <Button
+                              accessoryLeft={DeleteIcon}
+                              onPress={() => {
+                                handleSelectStudentForDeletion(student.id!);
+                              }}
+                            />
+                          </ButtonGroup>
+                        }
+                        key={`${student.id}_${index}`}
+                      />
+                    </>
+                  ))}
+                </>
+              ) : (
+                <View
+                  style={{
+                    ...styles.studentInfo,
+                    width: "100%",
+                    marginTop: 100,
+                    gap: 20,
+                  }}
+                >
+                  <Image
+                    source={require("../../../../assets/noStudentRegistered.png")}
+                    style={styles.image}
+                  />
+                  <Text style={{ textAlign: "center" }} category="h6">
+                    Nenhum estudante encontrado!
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </>
         ) : (
-          <View style={styles.noStudentsContainer}>
-            <Text>Não há alunos cadastrados.</Text>
+          <View style={{ ...styles.addAndSearchBarContainer, marginTop: 200 }}>
+            <ActivityIndicator
+              size="large"
+              color={theme["color-primary-500"]}
+            />
           </View>
         )}
       </View>
@@ -197,8 +227,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  studentInfo: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
   addStudentButton: {
     width: "100%",
+  },
+
+  image: {
+    width: 220,
+    height: 220,
+    resizeMode: "contain",
   },
 
   addAndSearchBarContainer: {
@@ -212,6 +254,9 @@ const styles = StyleSheet.create({
   studentListContainer: {
     marginTop: 25,
     marginBottom: 20,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
   },
 
   studentCard: {
@@ -256,6 +301,25 @@ const styles = StyleSheet.create({
 
   exitModalOptionsContainer: {
     width: "100%",
+    marginTop: 20,
+  },
+
+  buttons: { width: "100%" },
+
+  deleteStudentModal: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  deleteStudentCloseButton: {
+    marginTop: -32,
+    marginRight: -40,
+    alignSelf: "flex-end",
+  },
+
+  deleteStudentModalOptionsContainer: {
     marginTop: 20,
   },
 });

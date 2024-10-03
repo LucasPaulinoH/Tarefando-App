@@ -11,6 +11,7 @@ import { studentValidationSchema } from "../../../validations/student";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { styles } from "../studentScreenStyles";
+import BackPageButton from "../../../components/BackPageButton";
 
 const AddStudent = ({ navigation }: any) => {
   const { authState } = useAuth();
@@ -53,6 +54,7 @@ const AddStudent = ({ navigation }: any) => {
 
   return (
     <View style={{ backgroundColor: theme["color-primary-100"] }}>
+       <BackPageButton onPress={() => navigation.goBack()} />
       <View style={styles.mainContent}>
         {isBirthdayModalVisible && (
           <DateTimePicker
@@ -65,7 +67,7 @@ const AddStudent = ({ navigation }: any) => {
             }}
           />
         )}
-        <Text category="h6" style={styles.newStudentLabel}>
+        <Text category="h6">
           Novo estudante
         </Text>
         <Controller

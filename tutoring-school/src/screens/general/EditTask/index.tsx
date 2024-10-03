@@ -6,11 +6,12 @@ import {
   Button,
   Input,
   Text,
+  useTheme,
 } from "@ui-kitten/components";
-import { View, Image, ScrollView } from "react-native";
+import { View, Image, ScrollView, TouchableOpacity } from "react-native";
 import studentApi from "../../../services/Student";
 import subjectApi from "../../../services/Subject";
-import { CloseIcon, EditIcon } from "../../../theme/Icons";
+import { CloseIcon, EditIcon, ImageIcon } from "../../../theme/Icons";
 import * as SecureStore from "expo-secure-store";
 import { Subject } from "../../../services/Subject/type";
 import { Task } from "../../../services/Task/type";
@@ -26,13 +27,15 @@ import { taskValidationSchema } from "../../../validations/task";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { REQUIRED_FIELD_MSG } from "../../../validations/constants";
-
-const GALLERY_IMAGE_SIZE = 160;
+import { styles } from "../addAndEditTaskStyles";
+import BackPageButton from "../../../components/BackPageButton";
 
 const EditTask = ({ navigation }: any) => {
   const selectedStudentId: string = JSON.parse(
     SecureStore.getItem("selectedStudentId")!
   );
+
+  const theme = useTheme();
 
   const selectedTask: Task = JSON.parse(SecureStore.getItem("selectedTask")!);
 
@@ -168,109 +171,118 @@ const EditTask = ({ navigation }: any) => {
   }, []);
 
   return (
-    <ScrollView>
-      {isDeadlineDateModalVisible && (
-        <DateTimePicker
-          mode="date"
-          display="spinner"
-          value={deadlineDate}
-          onChange={(_: any, selectedDate: Date) => {
-            setDeadlineDate(selectedDate);
-            setIsDeadlineDateModalVisible(false);
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      <BackPageButton onPress={() => navigation.goBack()} />
+      <View style={styles.mainContent}>
+        {isDeadlineDateModalVisible && (
+          <DateTimePicker
+            mode="date"
+            display="spinner"
+            value={deadlineDate}
+            onChange={(_: any, selectedDate: Date) => {
+              setDeadlineDate(selectedDate);
+              setIsDeadlineDateModalVisible(false);
+            }}
+          />
+        )}
+
+        <Text category="h6">{`Edição de tarefa (${studentName})`}</Text>
+
+        <Controller
+          control={control}
+          rules={{
+            required: true,
           }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Título *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.title ? "danger" : "basic"}
+              caption={errors.title ? errors.title.message : ""}
+            />
+          )}
+          name="title"
         />
-      )}
-      <Text category="h6">Edição de tarefa</Text>
-      <Text category="s1">{studentName}</Text>
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Título *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.title ? "danger" : "basic"}
-            caption={errors.title ? errors.title.message : ""}
-          />
-        )}
-        name="title"
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Descrição *"
-            value={value}
-            onChangeText={onChange}
-            multiline={true}
-            numberOfLines={5}
-            status={errors.description ? "danger" : "basic"}
-            caption={errors.description ? errors.description.message : ""}
-          />
-        )}
-        name="description"
-      />
-      <Autocomplete
-        placeholder="Disciplina *"
-        value={subject}
-        onSelect={onSelect}
-        placement="inner top"
-        onChangeText={(subject) => setSubject(subject)}
-        status={showEmptySubjectError() ? "danger" : "basic"}
-        caption={showEmptySubjectError() ? REQUIRED_FIELD_MSG : ""}
-      >
-        {filteredSubjects.map((subject, index) => (
-          <AutocompleteItem key={index} title={subject.name} />
-        ))}
-      </Autocomplete>
-      <Button onPress={() => handleSetMultipleSelectedImageState(setImages)}>
-        <Text>Adicione imagens</Text>
-      </Button>
-      <Text>{` ${
-        images?.length! > 0 ? `Imagens selecionadas (${images?.length}):` : ""
-      }`}</Text>
-      <View>
-        {images?.length! > 0 &&
-          images?.map((imageUrl: string, index: number) => (
-            <View key={index}>
-              <CloseIcon
-                style={{
-                  width: 25,
-                  height: 25,
-                }}
-                onPress={() => setImages(images.filter((_, i) => i !== index))}
-              />
-              <Image
-                source={{ uri: imageUrl }}
-                width={GALLERY_IMAGE_SIZE}
-                height={GALLERY_IMAGE_SIZE}
-              />
-            </View>
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Descrição *"
+              value={value}
+              onChangeText={onChange}
+              multiline={true}
+              numberOfLines={5}
+              status={errors.description ? "danger" : "basic"}
+              caption={errors.description ? errors.description.message : ""}
+            />
+          )}
+          name="description"
+        />
+        <Autocomplete
+          style={styles.subjectAutocomplete}
+          placeholder="Disciplina *"
+          value={subject}
+          onSelect={onSelect}
+          placement="inner top"
+          onChangeText={(subject) => setSubject(subject)}
+          status={showEmptySubjectError() ? "danger" : "basic"}
+          caption={showEmptySubjectError() ? REQUIRED_FIELD_MSG : ""}
+        >
+          {filteredSubjects.map((subject, index) => (
+            <AutocompleteItem
+              key={index}
+              title={subject.name}
+              style={styles.subjectAutocomplete}
+            />
           ))}
+        </Autocomplete>
+        <Button
+          onPress={() => handleSetMultipleSelectedImageState(setImages)}
+          accessoryLeft={ImageIcon}
+        >
+          <Text>Adicione imagens</Text>
+        </Button>
+        <Text>{` ${
+          images?.length! > 0 ? `Imagens selecionadas (${images?.length}):` : ""
+        }`}</Text>
+        <View style={styles.imageGallery}>
+          {images?.length! > 0 &&
+            images?.map((imageUrl: string, index: number) => (
+              <View key={index} style={styles.galleryImageContainer}>
+                <TouchableOpacity
+                  style={styles.galleryImageDelete}
+                  onPress={() =>
+                    setImages(images.filter((_, i) => i !== index))
+                  }
+                >
+                  <CloseIcon fill={theme["color-primary-100"]} />
+                </TouchableOpacity>
+                <Image source={{ uri: imageUrl }} style={styles.galleryImage} />
+              </View>
+            ))}
+        </View>
+        <View>
+          <Input
+            label="Data de entrega *"
+            placeholder="dd/mm/aaaa"
+            value={dateToString(deadlineDate, true)}
+            onPress={() => setIsDeadlineDateModalVisible(true)}
+          />
+        </View>
+        <Button
+          accessoryLeft={EditIcon}
+          onPress={handleSubmit((formData: any) => {
+            if (!submittedOnce) setSubmittedOnce(true);
+            handleEditTask(formData);
+          })}
+        >
+          Confirmar edição
+        </Button>
       </View>
-      <View>
-        <Input
-          label="Data de entrega *"
-          placeholder="dd/mm/aaaa"
-          value={dateToString(deadlineDate, true)}
-          onPress={() => setIsDeadlineDateModalVisible(true)}
-        />
-      </View>
-      <Button
-        accessoryLeft={EditIcon}
-        onPress={handleSubmit((formData: any) => {
-          if (!submittedOnce) setSubmittedOnce(true);
-          handleEditTask(formData);
-        })}
-      >
-        Confirmar edição
-      </Button>
     </ScrollView>
   );
 };
