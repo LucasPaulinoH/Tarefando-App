@@ -21,7 +21,7 @@ const StudentListItem = (props: StudentListItemProps) => {
   const theme = useTheme();
 
   return (
-    <Card key={student.id} onPress={onPress} >
+    <Card key={student.id} onPress={onPress} style={{borderWidth: 0, backgroundColor: theme["color-primary-200"]}}>
       <View style={styles.studentCard}>
         <View style={styles.studentCardFirstHalf}>
           <View style={styles.studentNameAndLinked}>
@@ -34,7 +34,7 @@ const StudentListItem = (props: StudentListItemProps) => {
               );
               return !student.schoolId ? (
                 <>
-                  <Text><Text style={{color: DELAYED_TASK}}>❌</Text> Sem vínculo escolar</Text>
+                  <Text style={{color: theme["color-danger-600"]}}> Sem vínculo escolar</Text>
                 </>
               ) : pendentTasksQuantity > 0 ? (
                 <>

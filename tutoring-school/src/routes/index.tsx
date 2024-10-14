@@ -140,7 +140,7 @@ const Routes = () => {
                   borderTopRightRadius: 15,
                 },
                 tabBarLabelStyle: {
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                 },
                 tabBarActiveTintColor: theme["color-primary-200"],
                 tabBarInactiveTintColor: theme["color-primary-600"],
@@ -150,7 +150,7 @@ const Routes = () => {
                 name="GuardianHomeStack"
                 component={GuardianHomeStack}
                 options={{
-                  title: "Alunos",
+                  title: "Estudantes",
                   tabBarIcon: ({ focused, color, size }) => (
                     <StudentsIcon
                       style={{
@@ -199,8 +199,22 @@ const Routes = () => {
             <Tab.Navigator
               screenOptions={{
                 header: () => (
-                  <View style={{ marginTop: StatusBar.currentHeight }} />
+                  <View
+                    style={{
+                      marginTop: StatusBar.currentHeight,
+                    }}
+                  />
                 ),
+                tabBarStyle: {
+                  backgroundColor: theme["color-primary-900"],
+                  borderTopLeftRadius: 15,
+                  borderTopRightRadius: 15,
+                },
+                tabBarLabelStyle: {
+                  fontWeight: "bold",
+                },
+                tabBarActiveTintColor: theme["color-primary-200"],
+                tabBarInactiveTintColor: theme["color-primary-600"],
               }}
             >
               <Tab.Screen
@@ -208,42 +222,30 @@ const Routes = () => {
                 component={TutorHomeStack}
                 options={{
                   title: "Escolas",
-                  tabBarIcon: () => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <SchoolIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
+                      fill={color}
                     />
                   ),
                 }}
               />
-              <Tab.Screen
-                name="StudentsStack"
-                component={TutorStudentsStack}
-                options={{
-                  title: "Estudantes",
-                  tabBarIcon: () => (
-                    <StudentsIcon
-                      style={{
-                        width: TABBAR_ICON_SIZE,
-                        height: TABBAR_ICON_SIZE,
-                      }}
-                    />
-                  ),
-                }}
-              />
+
               <Tab.Screen
                 name="AnnouncementsStack"
                 component={TutorAnnouncementsStack}
                 options={{
                   title: "Comunicados",
-                  tabBarIcon: () => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <AnnouncementIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
+                      fill={color}
                     />
                   ),
                 }}
@@ -253,12 +255,13 @@ const Routes = () => {
                 component={MeStack}
                 options={{
                   title: "Eu",
-                  tabBarIcon: () => (
+                  tabBarIcon: ({ focused, color, size }) => (
                     <PersonIcon
                       style={{
                         width: TABBAR_ICON_SIZE,
                         height: TABBAR_ICON_SIZE,
                       }}
+                      fill={color}
                     />
                   ),
                 }}

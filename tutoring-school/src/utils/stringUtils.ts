@@ -1,3 +1,5 @@
+export const APP_NAME = "Tarefando"
+
 export const shortenLargeTexts = (text: string, limitIndex: number): string => {
   let shortVersion = text;
 

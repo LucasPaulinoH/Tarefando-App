@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, Image } from "react-native";
 import { School } from "../../../services/School/type";
 import { useAuth } from "../../../context/AuthContext";
 import schoolApi from "../../../services/School";
@@ -163,35 +163,47 @@ const TutorHome = ({ navigation }: any) => {
           ) : null}
         </View>
 
-        {filteredSchools.length > 0 ? (
-          <ScrollView style={styles.schoolListContainer}>
-            {filteredSchools.map((school: School) => (
-              <Card
-                key={school.id}
-                onPress={() => handleSchoolDetailsClick(school.id!)}
-              >
-                <View style={styles.schoolCard}>
-                  <View style={styles.schoolCardFirstHalf}>
-                    <Avatar
-                      size="giant"
-                      src={school.profileImage!}
-                      style={styles.schoolAvatar}
-                    />
+        <ScrollView style={styles.schoolListContainer}>
+          {filteredSchools.length > 0 ? (
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                height: "100%",
+              }}
+            >
+              {filteredSchools.map((school: School) => (
+                <Card
+                  key={school.id}
+                  onPress={() => handleSchoolDetailsClick(school.id!)}
+                  style={{
+                    borderWidth: 0,
+                    backgroundColor: theme["color-primary-200"],
+                  }}
+                >
+                  <View style={styles.schoolCard}>
+                    <View style={styles.schoolCardFirstHalf}>
+                      <Avatar
+                        size="giant"
+                        src={school.profileImage!}
+                        style={styles.schoolAvatar}
+                      />
+
+                      <View>
+                        <Text category="h6">{school.name}</Text>
+                        <Text>{`${shortenLargeTexts(
+                          `${school.district}`,
+                          17
+                        )}`}</Text>
+                      </View>
+                    </View>
 
                     <View>
-                      <Text category="h6">{school.name}</Text>
-                      <Text>{`${shortenLargeTexts(
-                        `${school.district}`,
-                        20
-                      )}, ${shortenLargeTexts(`${school.city}`, 20)}`}</Text>
-                    </View>
-                  </View>
-
-                  <View>
-                    <ButtonGroup appearance="ghost">
                       <Button
                         accessoryLeft={EditIcon}
                         onPress={() => handleEditSchoolClick(school)}
+                        appearance="ghost"
                       />
                       <Button
                         accessoryLeft={DeleteIcon}
@@ -201,18 +213,28 @@ const TutorHome = ({ navigation }: any) => {
                             school.profileImage!
                           )
                         }
+                         appearance="ghost"
                       />
-                    </ButtonGroup>
+                    </View>
                   </View>
-                </View>
-              </Card>
-            ))}
-          </ScrollView>
-        ) : (
-          <View style={styles.noSchoolsContainer}>
-            <Text>Não há escolas cadastrados.</Text>
-          </View>
-        )}
+                </Card>
+              ))}
+            </View>
+          ) : (
+            <View
+              style={{
+                width: "100%",
+                marginTop: 100,
+                gap: 20,
+              }}
+            >
+              <Image />
+              <Text style={{ textAlign: "center" }} category="h6">
+                Nenhuma escola cadastrada!
+              </Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </ScrollView>
   );

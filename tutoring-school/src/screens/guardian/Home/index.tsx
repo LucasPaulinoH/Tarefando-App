@@ -149,33 +149,38 @@ const GuardianHome = ({ navigation }: any) => {
 
             <ScrollView style={styles.studentListContainer}>
               {filteredStudents.length > 0 ? (
-                <>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                    height: "100%",
+                  }}
+                >
                   {filteredStudents.map((student: Student, index: number) => (
-                    <>
-                      <StudentListItem
-                        student={student}
-                        onPress={() => handleStudentDetailsClick(student.id!)}
-                        actions={
-                          <ButtonGroup appearance="ghost">
-                            <Button
-                              accessoryLeft={EditIcon}
-                              onPress={() => {
-                                handleEditStudentClick(student);
-                              }}
-                            />
-                            <Button
-                              accessoryLeft={DeleteIcon}
-                              onPress={() => {
-                                handleSelectStudentForDeletion(student.id!);
-                              }}
-                            />
-                          </ButtonGroup>
-                        }
-                        key={`${student.id}_${index}`}
-                      />
-                    </>
+                    <StudentListItem
+                      student={student}
+                      onPress={() => handleStudentDetailsClick(student.id!)}
+                      actions={
+                        <ButtonGroup appearance="ghost">
+                          <Button
+                            accessoryLeft={EditIcon}
+                            onPress={() => {
+                              handleEditStudentClick(student);
+                            }}
+                          />
+                          <Button
+                            accessoryLeft={DeleteIcon}
+                            onPress={() => {
+                              handleSelectStudentForDeletion(student.id!);
+                            }}
+                          />
+                        </ButtonGroup>
+                      }
+                      key={`${student.id}_${index}`}
+                    />
                   ))}
-                </>
+                </View>
               ) : (
                 <View
                   style={{
@@ -254,9 +259,6 @@ const styles = StyleSheet.create({
   studentListContainer: {
     marginTop: 25,
     marginBottom: 20,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
   },
 
   studentCard: {

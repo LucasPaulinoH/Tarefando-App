@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { Text, Input, Button, useTheme } from "@ui-kitten/components";
 import React, { useState } from "react";
 import { AddIcon } from "../../../theme/Icons";
@@ -138,3 +138,4 @@ const AddStudent = ({ navigation }: any) => {
 };
 
 export default AddStudent;
+

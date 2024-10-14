@@ -6,6 +6,7 @@ import { StyleSheet } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { loginValidationSchema } from "../../../validations/login";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { APP_NAME } from "../../../utils/stringUtils";
 
 const Login = ({ navigation }: any) => {
   const { onLogin } = useAuth();
@@ -40,7 +41,7 @@ const Login = ({ navigation }: any) => {
       }}
     >
       <View style={styles.innerContainer}>
-        <Text category="h3">Tutoring School</Text>
+        <Text category="h3">{APP_NAME}</Text>
         <Text category="h5">Acesse sua conta</Text>
         <Controller
           control={control}

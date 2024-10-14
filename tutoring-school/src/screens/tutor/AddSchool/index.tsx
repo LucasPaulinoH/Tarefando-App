@@ -1,13 +1,11 @@
 import { ScrollView, View } from "react-native";
-import { Text, Input, Button, Avatar } from "@ui-kitten/components";
+import { Text, Input, Button, Avatar, useTheme } from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
-import MaskInput from "react-native-mask-input";
 import { useEffect, useState } from "react";
 import { fetchCep } from "../../../utils/cep";
 import schoolApi from "../../../services/School";
-import { CEP_MASK } from "../../../utils/masks";
 import { School } from "../../../services/School/type";
-import { AddIcon } from "../../../theme/Icons";
+import { AddIcon, ImageIcon } from "../../../theme/Icons";
 import {
   handleSetSingleSelectedImageState,
   uploadImageToFirebase,
@@ -15,9 +13,14 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schoolValidationSchema } from "../../../validations/school";
+import BackPageButton from "../../../components/BackPageButton";
+import { styles } from "../schoolScreenStyles";
+import noSchoolIcon from "../../../../assets/noSchool.png";
 
 const AddSchool = ({ navigation }: any) => {
   const { authState } = useAuth();
+
+  const theme = useTheme();
 
   const {
     control,
@@ -97,122 +100,130 @@ const AddSchool = ({ navigation }: any) => {
   }, [cep]);
 
   return (
-    <ScrollView>
-      <Text category="h6">Nova escola</Text>
-      <Avatar
-        style={{ width: 150, height: 150 }}
-        size="giant"
-        source={{ uri: profileImage! }}
-      />
-      <View>
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      <BackPageButton onPress={() => navigation.goBack()} />
+      <View style={styles.mainContent}>
+        <Text category="h6">Nova escola</Text>
+        <View>
+          <Avatar
+            style={styles.schoolAvatar}
+            size="giant"
+            source={profileImage ? { uri: profileImage } : noSchoolIcon}
+          />
+          {profileImage ? (
+            <Button onPress={() => setProfileImage(null)} appearance="ghost">
+              <Text>Limpar</Text>
+            </Button>
+          ) : null}
+          <Button
+            onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
+            accessoryLeft={ImageIcon}
+            style={{ marginTop: 20 }}
+          >
+            <Text>Adicionar foto da escola</Text>
+          </Button>
+        </View>
+
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Nome *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.name ? "danger" : "basic"}
+              caption={errors.name ? errors.name.message : ""}
+            />
+          )}
+          name="name"
+        />
+        <Input
+          placeholder="Descrição"
+          multiline
+          numberOfLines={5}
+          textAlignVertical="top"
+          value={description}
+          onChangeText={(description) => setDescription(description)}
+        />
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Email *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.email ? "danger" : "basic"}
+              caption={errors.email ? errors.email.message : ""}
+            />
+          )}
+          name="email"
+        />
+
+        <Controller
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              placeholder="Telefone (contato) *"
+              value={value}
+              onChangeText={onChange}
+              status={errors.phone ? "danger" : "basic"}
+              caption={errors.phone ? errors.phone.message : ""}
+            />
+          )}
+          name="phone"
+        />
+
+        <Input
+          placeholder="CEP"
+          value={cep}
+          onChangeText={(cep) => setCep(cep)}
+          keyboardType="numeric"
+        />
+        <Input
+          placeholder="Rua"
+          value={address}
+          onChangeText={(street) => setAddress(street)}
+          disabled={isCepFilled}
+        />
+        <Input
+          placeholder="N°"
+          value={addressNumber}
+          onChangeText={(number) => setAddressNumber(number)}
+        />
+        <Input
+          placeholder="Bairro"
+          value={district}
+          onChangeText={(district) => setDistrict(district)}
+          disabled={isCepFilled}
+        />
+        <Input
+          placeholder="Cidade"
+          value={city}
+          onChangeText={(city) => setCity(city)}
+          disabled={isCepFilled}
+        />
+        <Input
+          placeholder="Estado"
+          value={state}
+          onChangeText={(state) => setState(state)}
+          disabled={isCepFilled}
+        />
         <Button
-          onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
+          accessoryLeft={AddIcon}
+          onPress={handleSubmit(handleAddSchoolClick)}
         >
-          <Text>Adicionar foto da escola</Text>
-        </Button>
-        <Button onPress={() => setProfileImage(null)} appearance="outline">
-          <Text>Limpar</Text>
+          Adicionar escola
         </Button>
       </View>
-
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Nome *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.name ? "danger" : "basic"}
-            caption={errors.name ? errors.name.message : ""}
-          />
-        )}
-        name="name"
-      />
-      <Input
-        placeholder="Descrição"
-        multiline={true}
-        numberOfLines={5}
-        value={description}
-        onChangeText={(description) => setDescription(description)}
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Email *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.email ? "danger" : "basic"}
-            caption={errors.email ? errors.email.message : ""}
-          />
-        )}
-        name="email"
-      />
-
-      <Controller
-        control={control}
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value } }) => (
-          <Input
-            placeholder="Telefone (contato) *"
-            value={value}
-            onChangeText={onChange}
-            status={errors.phone ? "danger" : "basic"}
-            caption={errors.phone ? errors.phone.message : ""}
-          />
-        )}
-        name="phone"
-      />
-      <MaskInput
-        mask={CEP_MASK}
-        value={cep}
-        onChangeText={(cep) => setCep(cep)}
-        placeholder="CEP"
-        keyboardType="numeric"
-      />
-      <Input
-        placeholder="Rua"
-        value={address}
-        onChangeText={(street) => setAddress(street)}
-        disabled={isCepFilled}
-      />
-      <Input
-        placeholder="N°"
-        value={addressNumber}
-        onChangeText={(number) => setAddressNumber(number)}
-      />
-      <Input
-        placeholder="Bairro"
-        value={district}
-        onChangeText={(district) => setDistrict(district)}
-        disabled={isCepFilled}
-      />
-      <Input
-        placeholder="Cidade"
-        value={city}
-        onChangeText={(city) => setCity(city)}
-        disabled={isCepFilled}
-      />
-      <Input
-        placeholder="Estado"
-        value={state}
-        onChangeText={(state) => setState(state)}
-        disabled={isCepFilled}
-      />
-      <Button
-        accessoryLeft={AddIcon}
-        onPress={handleSubmit(handleAddSchoolClick)}
-      >
-        Adicionar escola
-      </Button>
     </ScrollView>
   );
 };

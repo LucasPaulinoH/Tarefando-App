@@ -8,7 +8,7 @@ import {
 } from "@ui-kitten/components";
 import { View, Image, ScrollView, TouchableOpacity } from "react-native";
 import { AddIcon, CloseIcon, ImageIcon } from "../../../theme/Icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { compareQueryStrings, dateToString } from "../../../utils/stringUtils";
 import { Subject } from "../../../services/Subject/type";
 import subjectApi from "../../../services/Subject";
@@ -199,10 +199,11 @@ const AddTask = ({ navigation }: any) => {
               placeholder="Descrição *"
               value={value}
               onChangeText={onChange}
-              multiline={true}
+              multiline
               numberOfLines={5}
               status={errors.description ? "danger" : "basic"}
               caption={errors.description ? errors.description.message : ""}
+              textAlignVertical="top"
             />
           )}
           name="description"

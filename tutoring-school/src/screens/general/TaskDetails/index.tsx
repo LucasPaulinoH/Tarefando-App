@@ -181,7 +181,6 @@ const styles = StyleSheet.create({
   mainContent: {
     width: "100%",
     height: "100%",
-    marginTop: 20,
     paddingLeft: 15,
     paddingRight: 15,
     marginBottom: 30,

@@ -1,4 +1,4 @@
-import { ScrollView, View, Image, ActivityIndicator } from "react-native";
+import { ScrollView, View, Image, ActivityIndicator, TouchableOpacity } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Student } from "../../../services/Student/type";
 import {
@@ -368,12 +368,12 @@ const StudentDetails = ({ navigation }: any) => {
                 {!isUserTutor() ? (
                   <>
                     <Text category="h6">Vinculado à:</Text>
-                    <Card onPress={handleSchoolClick}>
+                    <TouchableOpacity onPress={handleSchoolClick}>
                       <View style={styles.schoolCard}>
                         <View style={styles.schoolCardFirstHalf}>
                           <Avatar
                             size="giant"
-                            src={school.profileImage}
+                            source={school.profileImage ?? require("../../../../assets/school.jpg")}
                             style={styles.schoolAvatar}
                           />
 
@@ -387,7 +387,7 @@ const StudentDetails = ({ navigation }: any) => {
                             <Text>{`${shortenLargeTexts(
                               `${school.district}, ${school.city}` ||
                                 LOADING_STRING,
-                              25
+                              30
                             )}`}</Text>
                           </View>
                         </View>
@@ -400,7 +400,7 @@ const StudentDetails = ({ navigation }: any) => {
                           />
                         </View>
                       </View>
-                    </Card>
+                    </TouchableOpacity>
                   </>
                 ) : (
                   <>
@@ -422,7 +422,7 @@ const StudentDetails = ({ navigation }: any) => {
                     </Card>
                   </>
                 )}
-                <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick}>
+                <Button accessoryLeft={AddIcon} onPress={handleAddTaskClick} style={{marginTop: 20}}>
                   Adicionar atividade
                 </Button>
                 {student.tasks!.length > 0 ? (
@@ -457,6 +457,7 @@ const StudentDetails = ({ navigation }: any) => {
                         onPress={() => {
                           handleTaskDetailsClick(task.id!);
                         }}
+                        style={{borderWidth: 0, backgroundColor: theme["color-primary-200"]}}
                       >
                         <View style={styles.taskCard}>
                           <View>
@@ -551,7 +552,7 @@ const StudentDetails = ({ navigation }: any) => {
                 style={{
                   ...styles.studentInfo,
                   gap: 175,
-                  marginTop: 80,
+                  marginTop: 100,
                 }}
               >
                 <View
@@ -565,10 +566,10 @@ const StudentDetails = ({ navigation }: any) => {
                     style={styles.image}
                   />
                   <Text
-                    style={{ textAlign: "center", marginTop: -20 }}
+                    style={{ textAlign: "center", marginTop: -15 }}
                     category="h6"
                   >
-                    Este aluno ainda não está vinculado a nenhuma escola!
+                    Este estudante ainda não está vinculado a nenhuma escola
                   </Text>
                 </View>
                 <Button
@@ -751,6 +752,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    
   },
 
   schoolCardFirstHalf: {

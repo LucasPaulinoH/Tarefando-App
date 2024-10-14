@@ -15,6 +15,8 @@ import { registerValidationSchema } from "../../../validations/register";
 import { StyleSheet } from "react-native";
 import { EditIcon } from "../../../theme/Icons";
 import userIcon from "../../../../assets/user.png";
+import { APP_NAME } from "../../../utils/stringUtils";
+import BackPageButton from "../../../components/BackPageButton";
 
 const Register = ({ navigation }: any) => {
   const auth = useAuth();
@@ -91,7 +93,10 @@ const Register = ({ navigation }: any) => {
 
   const renderFirstStep = (
     <View style={styles.innerContainer}>
-      <Text category="h3">Tia Lady Ajuda</Text>
+      <View style={{ alignSelf: "flex-start", marginBottom: -15 }}>
+        <BackPageButton onPress={() => navigation.goBack()} />
+      </View>
+      <Text category="h3">{APP_NAME}</Text>
       <Text category="h5">1. Preencha os dados de usuário</Text>
       <Avatar
         style={styles.avatar}
@@ -216,13 +221,16 @@ const Register = ({ navigation }: any) => {
         name="confirmPassword"
       />
 
-      <Button onPress={handleSubmit(handleFinishFirstStep)}>Confirmar</Button>
+      <Button onPress={handleSubmit(handleFinishFirstStep)}  style={styles.button}>Confirmar</Button>
     </View>
   );
 
   const renderSecondStep = (
     <View style={styles.innerContainer}>
-      <Text category="h3">Tia Lady Ajuda</Text>
+      <View style={{ alignSelf: "flex-start" }}>
+        <BackPageButton onPress={() => navigation.goBack()} />
+      </View>
+      <Text category="h3">{APP_NAME}</Text>
       <Text category="h5">2. Selecione o tipo de conta</Text>
       <RoleSelectCard
         role={UserRole.TUTOR}
@@ -235,16 +243,18 @@ const Register = ({ navigation }: any) => {
         onPress={() => handleRoleClick(UserRole.GUARDIAN)}
       />
 
-      <Button onPress={handleRegistration} style={styles.button}>
-        Finalizar cadastro
-      </Button>
-      <Button
-        onPress={() => setCurrentStep(0)}
-        style={styles.button}
-        appearance="outline"
-      >
-        Voltar
-      </Button>
+      <View style={{ width: "100%", marginTop: 20 }}>
+        <Button onPress={handleRegistration} style={styles.button}>
+          Finalizar cadastro
+        </Button>
+        <Button
+          onPress={() => setCurrentStep(0)}
+          style={styles.button}
+          appearance="ghost"
+        >
+          Voltar
+        </Button>
+      </View>
     </View>
   );
 
