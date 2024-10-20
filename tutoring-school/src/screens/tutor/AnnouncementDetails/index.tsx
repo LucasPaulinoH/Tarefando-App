@@ -1,13 +1,15 @@
 import { ScrollView, View, Image } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { Announcement } from "../../../services/Announcement/type";
-import { Button, Text } from "@ui-kitten/components";
+import { Button, Text, useTheme } from "@ui-kitten/components";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 import announcementApi from "../../../services/Announcement";
 import { useEffect, useState } from "react";
 import userApi from "../../../services/User";
 import { AssociatedGuardianCard } from "../../../services/User/type";
 import { useAuth } from "../../../context/AuthContext";
+import { DeleteIcon, EditIcon } from "../../../theme/Icons";
+import BackPageButton from "../../../components/BackPageButton";
 
 const AnnouncementDetails = ({ navigation }: any) => {
   const selectedAnnouncement: Announcement = JSON.parse(
@@ -15,6 +17,8 @@ const AnnouncementDetails = ({ navigation }: any) => {
   );
 
   const { authState } = useAuth();
+
+  const theme = useTheme();
 
   const [associatedGuardians, setAssociatedGuardians] = useState<
     AssociatedGuardianCard[]
@@ -40,7 +44,10 @@ const AnnouncementDetails = ({ navigation }: any) => {
   };
 
   const handleEditAnnouncementClick = () => {
-    SecureStore.setItem("selectedAnnouncement", JSON.stringify(selectedAnnouncement));
+    SecureStore.setItem(
+      "selectedAnnouncement",
+      JSON.stringify(selectedAnnouncement)
+    );
     navigation.navigate("EditAnnouncement");
   };
 
@@ -60,37 +67,49 @@ const AnnouncementDetails = ({ navigation }: any) => {
   }, []);
 
   return (
-    <ScrollView>
-      <Text category="h5">{selectedAnnouncement.title}</Text>
+    <ScrollView style={{ backgroundColor: theme["color-primary-100"] }}>
+      <BackPageButton onPress={() => navigation.goBack()} />
+      <View style={styles.mainContent}>
+        <Text category="h5">{selectedAnnouncement.title}</Text>
 
-      <Text category="s1" style={{ textAlign: "justify" }}>
-        {selectedAnnouncement.description}
-      </Text>
-      <View>
-        {selectedAnnouncement.images?.length! > 0 &&
-          selectedAnnouncement.images?.map((image, index) => (
-            <Image
-              source={{
-                uri: image,
-              }}
-              key={index}
-              style={styles.image}
-            />
-          ))}
+        <Text category="s1" style={{ textAlign: "justify" }}>
+          {selectedAnnouncement.description}
+        </Text>
+        <View>
+          {selectedAnnouncement.images?.length! > 0 &&
+            selectedAnnouncement.images?.map((image, index) => (
+              <Image
+                source={{
+                  uri: image,
+                }}
+                key={index}
+                style={styles.image}
+              />
+            ))}
+        </View>
+        <Text category="s1" style={{ textAlign: "justify" }}>
+          {`enviado para: ${associatedGuardians.map((guardian, index) =>
+            index !== associatedGuardians.length - 1
+              ? guardian.name + ", "
+              : guardian.name
+          )}`}
+        </Text>
+        <View>
+          <Button
+            onPress={handleEditAnnouncementClick}
+            accessoryLeft={EditIcon}
+          >
+            <Text>Editar comunicado</Text>
+          </Button>
+          <Button
+            onPress={handleDeleteAnnouncementClick}
+            appearance="ghost"
+            accessoryLeft={DeleteIcon}
+          >
+            <Text>Excluir comunicado</Text>
+          </Button>
+        </View>
       </View>
-      <Text category="s1" style={{ textAlign: "justify" }}>
-        {`enviado para: ${associatedGuardians.map((guardian, index) =>
-          index !== associatedGuardians.length - 1
-            ? guardian.name + ", "
-            : guardian.name
-        )}`}
-      </Text>
-      <Button onPress={handleEditAnnouncementClick}>
-        <Text>Editar comunicado</Text>
-      </Button>
-      <Button onPress={handleDeleteAnnouncementClick} appearance="outline">
-        <Text>Excluir comunicado</Text>
-      </Button>
     </ScrollView>
   );
 };
@@ -102,5 +121,16 @@ const styles = {
     width: 300,
     height: 300,
     borderRadius: 8,
+  },
+
+  mainContent: {
+    width: "100%",
+    height: "100%",
+    paddingLeft: 15,
+    paddingRight: 15,
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
+    marginBottom: 30,
   },
 };

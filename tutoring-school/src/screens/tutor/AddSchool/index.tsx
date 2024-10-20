@@ -104,7 +104,7 @@ const AddSchool = ({ navigation }: any) => {
       <BackPageButton onPress={() => navigation.goBack()} />
       <View style={styles.mainContent}>
         <Text category="h6">Nova escola</Text>
-        <View>
+        <View style={styles.schoolProfileImageContainer}>
           <Avatar
             style={styles.schoolAvatar}
             size="giant"
@@ -118,7 +118,6 @@ const AddSchool = ({ navigation }: any) => {
           <Button
             onPress={() => handleSetSingleSelectedImageState(setProfileImage)}
             accessoryLeft={ImageIcon}
-            style={{ marginTop: 20 }}
           >
             <Text>Adicionar foto da escola</Text>
           </Button>

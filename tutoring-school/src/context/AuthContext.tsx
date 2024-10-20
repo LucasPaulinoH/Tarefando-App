@@ -5,6 +5,7 @@ import { User } from "../services/User/type";
 import userApi from "../services/User";
 import { jwtDecode } from "jwt-decode";
 import authApi from "../services/Auth";
+import { Alert } from "react-native";
 
 interface AuthProps {
   authState?: {
@@ -72,6 +73,16 @@ export const AuthProvider = ({ children }: any) => {
       await SecureStore.setItemAsync("TOKEN_KEY", receivedToken);
     } catch (error: any) {
       console.log("Error during login: ", error.response);
+      Alert.alert(
+        "Erro no login",
+        "Credenciais inválidas",
+        [
+          {
+            text: "Voltar",
+          },
+        ],
+        { cancelable: false }
+      );
     }
   };
 

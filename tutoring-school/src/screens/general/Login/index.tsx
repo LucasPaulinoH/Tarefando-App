@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 import { Button, Input, Text, useTheme } from "@ui-kitten/components";
 import { useAuth } from "../../../context/AuthContext";
 import { LoginIcon } from "../../../theme/Icons";

@@ -27,6 +27,7 @@ export const styles = StyleSheet.create({
       position: "relative",
       height: 300,
     },
+    
     galleryImageDelete: {
       width: 25,
       height: 25,

@@ -119,65 +119,85 @@ const SchoolDetails = ({ navigation }: any) => {
         />
       ) : null}
       <View style={styles.mainContent}>
-        <View>
-          <Text category="h5">{school.name}</Text>
-          <Text category="s1" style={{ textAlign: "justify" }}>
-            {school.description}
-          </Text>
-          <View style={styles.schoolData}>
-            <View style={styles.contactInfoContainer}>
-              <Icon
-                name="phone-outline"
-                style={styles.icons}
-                fill={theme["color-primary-500"]}
-              />
-              <Text>{school.phone}</Text>
-            </View>
-            <View style={styles.contactInfoContainer}>
-              <Icon
-                name="email-outline"
-                style={styles.icons}
-                fill={theme["color-primary-500"]}
-              />
-              <Text>{school.email}</Text>
-            </View>
-            <View style={styles.contactInfoContainer}>
-              <Icon
-                name="navigation-2-outline"
-                style={styles.icons}
-                fill={theme["color-primary-500"]}
-              />
-              <Text
-                style={{ textAlign: "justify" }}
-              >{`${school.address}, ${school.addressNumber} - ${school.district}, ${school.city} - ${school.state}`}</Text>
-            </View>
+        <Text category="h5">{school.name}</Text>
+        <Text category="s1" style={{ textAlign: "justify" }}>
+          {school.description}
+        </Text>
+        <View style={{ maxWidth: "90%", ...styles.schoolData }}>
+          <View style={styles.contactInfoContainer}>
+            <Icon
+              name="phone-outline"
+              style={styles.icons}
+              fill={theme["color-primary-500"]}
+            />
+            <Text>{school.phone}</Text>
           </View>
+          <View style={styles.contactInfoContainer}>
+            <Icon
+              name="email-outline"
+              style={styles.icons}
+              fill={theme["color-primary-500"]}
+            />
+            <Text>{school.email}</Text>
+          </View>
+          <View style={styles.contactInfoContainer}>
+            <Icon
+              name="navigation-2-outline"
+              style={styles.icons}
+              fill={theme["color-primary-500"]}
+            />
+            <Text
+              style={{ textAlign: "justify" }}
+            >{`${school.address}, ${school.addressNumber} - ${school.district}, ${school.city} - ${school.state}`}</Text>
+          </View>
+        </View>
 
-          {isUserTutor() ? (
-            <Button onPress={() => setShowQr(true)}>
-              Exibir código de vinculação
-            </Button>
-          ) : null}
+        {isUserTutor() ? (
+          <Button
+            onPress={() => setShowQr(true)}
+            style={{
+              width: "91%",
+              margin: 20,
+              paddingRight: 15,
+              paddingLeft: 15,
+            }}
+          >
+            Exibir código de vinculação
+          </Button>
+        ) : null}
 
-          {students.length > 0 && isUserTutor() ? (
-            <View>
-              <Text category="h6">Alunos desta escola</Text>
-              <Input
-                placeholder="Buscar estudantes..."
-                accessoryLeft={SearchIcon}
-                value={searchTerm}
-                onChangeText={(search) => setSearchTerm(search)}
-              />
+        {students.length > 0 && isUserTutor() ? (
+          <View
+            style={{
+              ...styles.mainContent,
+              margin: 10,
+              gap: 10,
+              paddingRight: 15,
+              paddingLeft: 15,
+            }}
+          >
+            <Text category="h6">Alunos desta escola</Text>
+            <Input
+              placeholder="Buscar estudantes..."
+              accessoryLeft={SearchIcon}
+              value={searchTerm}
+              onChangeText={(search) => setSearchTerm(search)}
+            />
+
+            <View style={{marginTop: 20}}>
               {filteredStudents.map((student: Student) => (
                 <Card
                   key={student.id}
                   onPress={() => handleStudentDetailsClick(student.id!)}
+                  style={{
+                    borderWidth: 0,
+                    backgroundColor: theme["color-primary-200"],
+                  }}
                 >
                   <View style={styles.studentCard}>
                     <View style={styles.studentCardFirstHalf}>
-                      <View style={styles.studentNameAndLinked}>
-                        <Text category="h6">{student.name}</Text>
-                      </View>
+                      <Text category="h6">{student.name}</Text>
+
                       <View style={styles.pendentTasksIconAndLabel}></View>
                     </View>
 
@@ -186,18 +206,19 @@ const SchoolDetails = ({ navigation }: any) => {
                         accessoryLeft={UnlinkSchoolIcon}
                         onPress={() => handleUnlinkFromSchool(student.id!)}
                         appearance="ghost"
+                        style={{ marginRight: -20 }}
                       />
                     </View>
                   </View>
                 </Card>
               ))}
             </View>
-          ) : students.length === 0 && isUserTutor() ? (
-            <View style={{ alignSelf: "center" }}>
-              <Text>Não há alunos vinculados a esta escola ainda.</Text>
-            </View>
-          ) : null}
-        </View>
+          </View>
+        ) : students.length === 0 && isUserTutor() ? (
+          <View style={{ alignSelf: "center" }}>
+            <Text>Não há alunos vinculados a esta escola ainda.</Text>
+          </View>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -212,11 +233,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    marginTop: 15,
+    marginBottom: 20,
   },
 
   profileImage: {
     width: "100%",
-    height: 350,
+    height: 290,
   },
 
   icons: {
@@ -237,6 +260,7 @@ const styles = StyleSheet.create({
   },
 
   contactInfoContainer: {
+    maxWidth: "100%",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",

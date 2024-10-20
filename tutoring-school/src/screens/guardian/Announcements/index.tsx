@@ -65,7 +65,11 @@ const GuardianAnnouncements = () => {
                 <>
                   <Card
                     key={`${announcement.title}${index}`}
-                    style={styles.announcementCard}
+                    style={{
+                      ...styles.announcementCard,
+                      borderWidth: 0,
+                      backgroundColor: theme["color-primary-200"],
+                    }}
                   >
                     <View>
                       <Text category="h6">{announcement.title}</Text>

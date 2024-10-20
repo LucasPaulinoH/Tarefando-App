@@ -93,9 +93,9 @@ const EditSchool = ({ navigation }: any) => {
       <BackPageButton onPress={() => navigation.goBack()} />
       <View style={styles.mainContent}>
         <Text category="h6">Editar escola</Text>
-        <View>
+        <View style={styles.schoolProfileImageContainer}>
           <Avatar
-             style={styles.schoolAvatar}
+            style={styles.schoolAvatar}
             size="giant"
             source={profileImage ? { uri: profileImage } : noSchoolIcon}
           />

@@ -80,15 +80,7 @@ const Routes = () => {
         <Stack.Screen name="AddTask" component={AddTask} />
         <Stack.Screen name="SchoolDetails" component={SchoolDetails} />
         <Stack.Screen name="StudentDetails" component={StudentDetails} />
-      </Stack.Navigator>
-    );
-  };
-
-  const TutorStudentsStack = () => {
-    return (
-      <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
         <Stack.Screen name="Students" component={TutorStudents} />
-        <Stack.Screen name="StudentDetails" component={StudentDetails} />
         <Stack.Screen name="TaskDetails" component={TaskDetails} />
         <Stack.Screen name="EditTask" component={EditTask} />
       </Stack.Navigator>

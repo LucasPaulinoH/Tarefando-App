@@ -6,7 +6,6 @@ import schoolApi from "../../../services/School";
 import {
   Avatar,
   Button,
-  ButtonGroup,
   Card,
   Input,
   Text,
@@ -25,6 +24,7 @@ import {
 } from "../../../theme/Icons";
 import { deleteImageFromFirebase } from "../../../utils/imageFunctions";
 import GenericModal from "../../../components/GenericModal";
+import noSchoolIcon from "../../../../assets/noSchool.png";
 
 const TutorHome = ({ navigation }: any) => {
   const { authState } = useAuth();
@@ -178,27 +178,27 @@ const TutorHome = ({ navigation }: any) => {
                   key={school.id}
                   onPress={() => handleSchoolDetailsClick(school.id!)}
                   style={{
-                    borderWidth: 0,
                     backgroundColor: theme["color-primary-200"],
+                    borderWidth: 0,
                   }}
                 >
                   <View style={styles.schoolCard}>
-                    <View style={styles.schoolCardFirstHalf}>
+                    <View style={styles.avatarContainer}>
                       <Avatar
                         size="giant"
-                        src={school.profileImage!}
+                        source={school.profileImage ? { uri: school.profileImage } : noSchoolIcon}
                         style={styles.schoolAvatar}
                       />
 
                       <View>
-                        <Text category="h6">{school.name}</Text>
-                        <Text>{`${shortenLargeTexts(
-                          `${school.district}`,
-                          17
-                        )}`}</Text>
+                        <Text category="h6">
+                          {shortenLargeTexts(school.name, 18)}
+                        </Text>
+                        <Text >
+                          {shortenLargeTexts(school.email, 20)}
+                        </Text>
                       </View>
                     </View>
-
                     <View>
                       <Button
                         accessoryLeft={EditIcon}
@@ -213,7 +213,7 @@ const TutorHome = ({ navigation }: any) => {
                             school.profileImage!
                           )
                         }
-                         appearance="ghost"
+                        appearance="ghost"
                       />
                     </View>
                   </View>
@@ -244,11 +244,14 @@ export default TutorHome;
 
 const styles = StyleSheet.create({
   schoolCard: {
-    width: "100%",
     display: "flex",
     flexDirection: "row",
-    alignItems: "center",
+    gap: 10,
     justifyContent: "space-between",
+    alignItems: "center",
+    margin: -15,
+    marginLeft: -25,
+    marginRight: -15,
   },
 
   addAndSearchBarContainer: {
@@ -259,11 +262,11 @@ const styles = StyleSheet.create({
     gap: 14,
   },
 
-  schoolCardFirstHalf: {
+  avatarContainer: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 20,
   },
 
   schoolListContainer: {
@@ -280,6 +283,10 @@ const styles = StyleSheet.create({
 
   schoolAvatar: {
     borderRadius: 5,
+    margin: 0,
+    padding: 0,
+    width: 80,
+    height: 100
   },
 
   mainContent: {
