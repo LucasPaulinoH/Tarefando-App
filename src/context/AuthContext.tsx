@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { User } from "../services/User/type";
 import userApi from "../services/User";
@@ -31,37 +31,37 @@ export const AuthProvider = ({ children }: any) => {
     user: User | null;
   }>({ token: null, authenticated: null, user: null });
 
-  useEffect(() => {
-    SecureStore.getItemAsync("TOKEN_KEY").then((recoveredToken) => {
-      axios.defaults.headers.Authorization = null;
+  // useEffect(() => {
+  //   SecureStore.getItemAsync("TOKEN_KEY").then((recoveredToken) => {
+  //     axios.defaults.headers.Authorization = null;
 
-      if (recoveredToken) {
-        axios.defaults.headers.Authorization = recoveredToken;
-        const loggedUserId = jwtDecode(recoveredToken).id;
+  //     if (recoveredToken) {
+  //       axios.defaults.headers.Authorization = recoveredToken;
+  //       const loggedUserId = jwtDecode(recoveredToken).id;
 
-        userApi.getUser(loggedUserId).then((loggedUser) => {
-          setAuthState({
-            token: recoveredToken,
-            authenticated: true,
-            user: loggedUser,
-          });
-        });
-      }
+  //       userApi.getUser(loggedUserId).then((loggedUser) => {
+  //         setAuthState({
+  //           token: recoveredToken,
+  //           authenticated: true,
+  //           user: loggedUser,
+  //         });
+  //       });
+  //     }
 
-      if (!recoveredToken) {
-        setAuthState({ token: null, authenticated: false, user: null });
-      }
-    });
-  }, []);
+  //     if (!recoveredToken) {
+  //       setAuthState({ token: null, authenticated: false, user: null });
+  //     }
+  //   });
+  // }, []);
 
   const login = async (email: string, password: string) => {
     try {
       const loginResponse = await authApi.login(email, password);
       const receivedToken = loginResponse.token;
 
-      axios.defaults.headers.Authorization = receivedToken;
+      axios.defaults.headers.Authorization = receivedToken;      
 
-      const loggedUserId = jwtDecode(receivedToken).id;
+      const loggedUserId = jwtDecode(receivedToken)?.id;
       const loggedUser = await userApi.getUser(loggedUserId);
 
       setAuthState({
