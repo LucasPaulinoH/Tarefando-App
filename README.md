@@ -23,6 +23,32 @@ A mobile app designed for tracking and managing academic tasks, tailored to prim
 
 ---
 
+## Screens
+
+Authentication (login, register - 1° step, register - 2° step)
+
+![alt text](<./assets/auth pages.png>)
+
+**Guardian** UI (students list, new student, edit student)
+
+![alt text](<./assets/guardian ui.png>)
+
+**Guardian** UI - Student Details (unlinked, scanning QR Code, linked)
+
+![alt text](<./assets/student details.png>)
+
+Task screens (new task, task details)
+
+![alt text](<./assets/task screens.png>)
+
+**Tutor** UI (classes list, new task, class details)
+
+![alt text](<./assets/tutor ui.png>)
+
+**Tutor** UI (announcements list, new announcement and sending of announcement);  **Guardian** UI (received announcements list)
+
+![alt text](announcements.png)
+
 ## API
 
 URL: https://tarefando-api.onrender.com/  
