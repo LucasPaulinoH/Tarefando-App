@@ -31,7 +31,7 @@ Repository: https://github.com/LucasPaulinoH/Tarefando-API
 
 ## Release
 
-![alt text](<./assets/coming soon on google play.png>)
+![alt text](<coming soon GP.png>)
 
 ## License
 
